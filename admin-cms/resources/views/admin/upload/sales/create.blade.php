@@ -24,6 +24,9 @@
                             <option value="top_distributors">Top Distributors</option>
                             <option value="top_retailers">Top Retailers</option>
                             <option value="order_delivery">Order vs Delivery</option>
+                            <option value="channel_targets">Channel Targets & Budgets</option>
+                            <option value="order_book">Open Order Book</option>
+                            <option value="promotion_performance">Promotion Performance</option>
                         </select>
                         @error('data_type')
                             <div class="text-danger">{{ $message }}</div>
@@ -86,6 +89,9 @@
                     <li><strong>Top Distributors:</strong> Distributor performance data</li>
                     <li><strong>Top Retailers:</strong> Retailer performance data</li>
                     <li><strong>Order vs Delivery:</strong> Order and delivery comparison</li>
+                    <li><strong>Channel Targets & Budgets:</strong> Monthly revenue/volume targets and planned spend per channel</li>
+                    <li><strong>Open Order Book:</strong> Pipeline orders with status, fulfilment and margin</li>
+                    <li><strong>Promotion Performance:</strong> Campaign ROI and revenue uplift metrics</li>
                 </ul>
             </div>
         </div>

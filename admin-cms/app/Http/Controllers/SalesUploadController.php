@@ -30,7 +30,7 @@ class SalesUploadController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-            'data_type' => 'required|in:monthly_report,daily_report,best_selling,top_distributors,top_retailers,order_delivery',
+            'data_type' => 'required|in:monthly_report,daily_report,best_selling,top_distributors,top_retailers,order_delivery,channel_targets,order_book,promotion_performance',
         ]);
 
         try {
