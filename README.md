@@ -109,3 +109,11 @@ MIT License © Development Team
 - `setup.bat` – installs dependencies, copies `.env` templates, runs Laravel migrations, and prepares the AI service virtual environment.
 - `run.bat` – launches backend API, admin CMS web server and queue worker, AI service, and frontend dev server, then opens the app in the browser.
 
+### GitHub Demo Preview
+
+A standalone, data-imagined snapshot of the executive dashboard lives at `docs/github-demo.html`. Open it directly or serve the `docs/` folder with any static host (ideal for GitHub Pages).
+
+### Static Demo Pages
+
+The `demo/` directory contains standalone HTML renderings of each major dashboard (`executive-bi.html`, `reports.html`, `sales.html`, `finance.html`, `production.html`, `inventory.html`). Open `demo/index.html` for a gallery view—ideal for GitHub previews or documentation screenshots without running the stack.
+

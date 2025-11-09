@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash · Finance Command Center Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="./assets/demo.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="./executive-bi.html"><span class="material-icons-outlined">insights</span>Executive BI</a></li>
+        <li><a href="./reports.html"><span class="material-icons-outlined">analytics</span>Reports</a></li>
+        <li><a href="./sales.html"><span class="material-icons-outlined">trending_up</span>Sales</a></li>
+        <li class="active"><a href="./finance.html"><span class="material-icons-outlined">account_balance</span>Finance</a></li>
+        <li><a href="./production.html"><span class="material-icons-outlined">precision_manufacturing</span>Production</a></li>
+        <li><a href="./inventory.html"><span class="material-icons-outlined">inventory_2</span>Inventory</a></li>
+        <li><a href="./index.html"><span class="material-icons-outlined">apps</span>Back to Gallery</a></li>
+      </ul>
+      <div class="sidebar-footer">Variance · Liquidity · Risk</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Finance Command Center</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">attach_money</span>finance</span>
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">shield</span>risk</span>
+        </div>
+        <div class="avatar">F</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Finance</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Finance Command Center</h2>
+          <p>Monitor profitability, liquidity, and exposure with AI-backed variance insights. Sample values reflect the `/finance/overview` payload seeded for demo.</p>
+          <div class="meta-row">
+            <span>Month: September 2025</span>
+            <span>Cash runway: 9.8 months</span>
+            <span>Last refresh: 09 Nov 2025 · 07:38</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="card">
+            <h3>Net Revenue (MTD)</h3>
+            <div class="metric">৳ 8046M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+5.1% vs plan</div>
+            <div class="trend">FX tailwinds contributed ৳ 124M</div>
+          </article>
+          <article class="card">
+            <h3>Gross Margin %</h3>
+            <div class="metric">34.2%</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+1.9 pts</div>
+            <div class="trend">Inventory optimization trimmed holding cost</div>
+          </article>
+          <article class="card">
+            <h3>Operating Cash</h3>
+            <div class="metric">৳ 2124M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+৳ 186M</div>
+            <div class="trend">Working capital program freed ৳ 93M</div>
+          </article>
+          <article class="card">
+            <h3>Debt to Equity</h3>
+            <div class="metric">0.62×</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-0.04×</div>
+            <div class="trend">Strategic repayments lowered leverage</div>
+          </article>
+        </section>
+
+        <section class="grid-2" style="grid-template-columns: 2fr 1fr;">
+          <article class="chart-card" style="min-height: 380px;">
+            <div>
+              <h3>EBITDA &amp; Cash Flow Trend</h3>
+              <p style="color: var(--muted); font-size: 13px;">Actual vs plan (৳ million)</p>
+            </div>
+            <canvas id="financeTrend"></canvas>
+          </article>
+          <article class="card" style="min-height: 380px;">
+            <h3>Alerts &amp; Watchlist</h3>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#fb7185;">warning</span>CapEx spend 12% above plan due to plant retrofit. CFO review scheduled tomorrow.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#16a34a;">paid</span>Working capital unlock of ৳ 180M available via early supplier payments.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">insights</span>Hedge USD exposure for Q1 shipments to protect margin by 0.6 pts.</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap:18px;">
+            <h3>Financial Recommendations</h3>
+            <div class="list">
+              <div class="list-item">
+                <strong>Accelerate receivables</strong>
+                Target top 15 accounts to recover ৳ 97M faster (DSO -4 days).
+              </div>
+              <div class="list-item">
+                <strong>Renegotiate corridor C</strong>
+                Logistics contract reset saves ৳ 31M per quarter.
+              </div>
+              <div class="list-item">
+                <strong>Reinvest FX gains</strong>
+                Channel into seasonal marketing for projected ৳ 420M uplift.
+              </div>
+            </div>
+          </article>
+          <article class="card" style="gap:18px;">
+            <h3>Department Variance</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th style="text-align:right;">Budget (৳ M)</th>
+                  <th style="text-align:right;">Actual (৳ M)</th>
+                  <th style="text-align:right;">Variance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Sales &amp; Marketing</td>
+                  <td style="text-align:right;">1025</td>
+                  <td style="text-align:right;">986</td>
+                  <td style="text-align:right;">+৳ 39</td>
+                </tr>
+                <tr>
+                  <td>Operations</td>
+                  <td style="text-align:right;">864</td>
+                  <td style="text-align:right;">921</td>
+                  <td style="text-align:right;">-৳ 57</td>
+                </tr>
+                <tr>
+                  <td>IT &amp; Digital</td>
+                  <td style="text-align:right;">282</td>
+                  <td style="text-align:right;">246</td>
+                  <td style="text-align:right;">+৳ 36</td>
+                </tr>
+                <tr>
+                  <td>HR &amp; Talent</td>
+                  <td style="text-align:right;">185</td>
+                  <td style="text-align:right;">178</td>
+                  <td style="text-align:right;">+৳ 7</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap:18px;">
+            <h3>Expense Category Insights</h3>
+            <div class="list">
+              <div class="list-item">
+                <strong>Logistics</strong>
+                ৳ 684M · +11% vs plan · Fuel surcharge impact ৳ 41M.
+              </div>
+              <div class="list-item">
+                <strong>Marketing</strong>
+                ৳ 542M · -6% vs plan · Holding budget for festive burst.
+              </div>
+              <div class="list-item">
+                <strong>Technology</strong>
+                ৳ 325M · +3% vs plan · Cloud optimization underway.
+              </div>
+            </div>
+          </article>
+          <article class="card" style="gap:18px;">
+            <h3>Loan Exposure</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Facility</th>
+                  <th>Outstanding</th>
+                  <th>Rate</th>
+                  <th>Maturity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Term Loan A</td>
+                  <td>৳ 1800M</td>
+                  <td>7.8%</td>
+                  <td>Dec 2027</td>
+                </tr>
+                <tr>
+                  <td>Revolver</td>
+                  <td>৳ 600M</td>
+                  <td>8.2%</td>
+                  <td>Mar 2026</td>
+                </tr>
+                <tr>
+                  <td>ECB Facility</td>
+                  <td>৳ 1400M</td>
+                  <td>6.4%</td>
+                  <td>Aug 2028</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="chart-card" style="min-height: 360px;">
+            <div>
+              <h3>Cash Flow Projection</h3>
+              <p style="color: var(--muted); font-size: 13px;">Budget vs projected vs EBITDA (৳ million)</p>
+            </div>
+            <canvas id="cashProjection"></canvas>
+          </article>
+          <article class="card" style="gap:18px;">
+            <h3>What-if Scenario</h3>
+            <div class="scenario-list">
+              <div class="scenario">
+                <div>
+                  <strong>Advance vendor payments</strong>
+                  Discounts save ৳ 62M · Cash impact -৳ 140M · DPO -5 days
+                </div>
+                <span class="delta" style="margin:0;">Recommended</span>
+              </div>
+              <div class="scenario" style="background: rgba(249,115,22,0.12);">
+                <div>
+                  <strong>Delay CapEx expansion</strong>
+                  CapEx -৳ 200M · Revenue -৳ 80M · Maintains runway 11 months
+                </div>
+                <span class="delta" style="margin:0;">Consider</span>
+              </div>
+              <div class="scenario">
+                <div>
+                  <strong>In-source logistics lane</strong>
+                  Opex +৳ 35M · Savings ৳ 78M annually · Break-even 5 months
+                </div>
+                <span class="delta" style="margin:0;">High ROI</span>
+              </div>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <footer class="demo-footer">Static rendering of the Finance dashboard following the `/finance/overview` response shape.</footer>
+    </main>
+  </div>
+
+  <script>
+    (function initFinanceCharts() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          const finTrendCtx = document.getElementById('financeTrend')
+          if (finTrendCtx) {
+            window.iDashDemo.createChart(finTrendCtx, {
+              type: 'line',
+              data: {
+                labels: ['2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09'],
+                datasets: [
+                  {
+                    label: 'EBITDA',
+                    data: [1280, 1340, 1380, 1420, 1480, 1620],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                    fill: true,
+                    tension: 0.38,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Operating Cash',
+                    data: [1800, 1860, 1900, 1950, 2020, 2120],
+                    borderColor: '#16a34a',
+                    backgroundColor: 'rgba(22, 163, 74, 0.14)',
+                    fill: true,
+                    tension: 0.32,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Plan',
+                    data: [1260, 1300, 1350, 1400, 1450, 1500],
+                    borderColor: '#111827',
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: 0
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                  y: { grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false }, ticks: { callback: (v) => `৳${v}M` } },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const cashCtx = document.getElementById('cashProjection')
+          if (cashCtx) {
+            window.iDashDemo.createChart(cashCtx, {
+              type: 'line',
+              data: {
+                labels: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                datasets: [
+                  {
+                    label: 'Budget Cash Flow',
+                    data: [520, 540, 550, 530, 510, 570, 590],
+                    borderColor: '#94a3b8',
+                    tension: 0.3,
+                    pointRadius: 3
+                  },
+                  {
+                    label: 'Projected Cash Flow',
+                    data: [510, 570, 600, 620, 640, 690, 740],
+                    borderColor: '#16a34a',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.32
+                  },
+                  {
+                    label: 'EBITDA Forecast',
+                    data: [180, 190, 220, 240, 260, 290, 320],
+                    borderColor: '#f97316',
+                    borderDash: [5, 5],
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    tension: 0.28
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                  y: { ticks: { callback: (v) => `৳${v}M` }, grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false } },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+        })
+      }
+
+      if (window.iDashDemo?.onReady) {
+        register()
+      } else {
+        document.addEventListener('iDashDemoReady', register, { once: true })
+      }
+    })()
+  </script>
+</body>
+</html>

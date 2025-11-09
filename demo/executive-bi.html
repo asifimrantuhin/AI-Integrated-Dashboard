@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash · Executive BI Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="./assets/demo.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li class="active"><a href="./executive-bi.html"><span class="material-icons-outlined">insights</span>Executive BI</a></li>
+        <li><a href="./reports.html"><span class="material-icons-outlined">analytics</span>Reports</a></li>
+        <li><a href="./sales.html"><span class="material-icons-outlined">trending_up</span>Sales</a></li>
+        <li><a href="./finance.html"><span class="material-icons-outlined">account_balance</span>Finance</a></li>
+        <li><a href="./production.html"><span class="material-icons-outlined">precision_manufacturing</span>Production</a></li>
+        <li><a href="./inventory.html"><span class="material-icons-outlined">inventory_2</span>Inventory</a></li>
+        <li><a href="./index.html"><span class="material-icons-outlined">apps</span>Back to Gallery</a></li>
+      </ul>
+      <div class="sidebar-footer">Dynamic APIs • File ingestion • Audit logging</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Intelligent Management Dashboard</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">workspace_premium</span>executive</span>
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">psychology</span>analyst</span>
+        </div>
+        <div class="avatar">A</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Executive BI</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Executive Intelligence</h2>
+          <p>Consolidated revenue, profitability, and operational health powered by AI cognition. Values mirror the `/bi/overview` payload seeded by `GenerateDemoData`.</p>
+          <div class="meta-row">
+            <span>Company: Orbit Retail Group</span>
+            <span>Year-Month: 2025-09</span>
+            <span>Last updated: 09 Nov 2025 · 07:42</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="card">
+            <h3>Revenue</h3>
+            <div class="metric">৳ 9784M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+7.8% MoM</div>
+            <div class="trend">Uptrend driven by D2C and marketplace channels</div>
+          </article>
+          <article class="card">
+            <h3>Cost</h3>
+            <div class="metric">৳ 6427M</div>
+            <div class="delta"><span class="material-icons-outlined">south_east</span>-2.4% MoM</div>
+            <div class="trend">Procurement savings and optimized logistics</div>
+          </article>
+          <article class="card">
+            <h3>Gross Margin</h3>
+            <div class="metric">৳ 3357M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+0.9 pts</div>
+            <div class="trend">Margin rate 34.3% vs 33.4% previous month</div>
+          </article>
+          <article class="card">
+            <h3>Inventory Value</h3>
+            <div class="metric">৳ 1942M</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-5.6%</div>
+            <div class="trend">Carry optimized via slow-mover liquidation</div>
+          </article>
+          <article class="card">
+            <h3>Budget Variance</h3>
+            <div class="metric">৳ 184M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>Positive</div>
+            <div class="trend">Marketing under-spend offsets CapEx slip</div>
+          </article>
+          <article class="card">
+            <h3>Attrition %</h3>
+            <div class="metric">4.8%</div>
+            <div class="delta"><span class="material-icons-outlined">south_east</span>-0.7 pts</div>
+            <div class="trend">Engagement program reduced exit risk</div>
+          </article>
+        </section>
+
+        <section class="grid-2" style="grid-template-columns: 2fr 1fr; align-items: stretch;">
+          <article class="chart-card" style="min-height: 420px;">
+            <div>
+              <h3>Supply Chain Trend</h3>
+              <p style="color: var(--muted); font-size: 13px;">PO vs GRN vs Invoice value (৳ million)</p>
+            </div>
+            <canvas id="supplyTrend"></canvas>
+          </article>
+          <div class="column" style="display: grid; gap: 20px; align-content: start;">
+            <article class="card">
+              <h3>Executive Alerts</h3>
+              <ul class="insight-list">
+                <li class="insight-item"><span class="material-icons-outlined" style="color:#fb7185;">error</span>Gross margin 34.3% below 35% threshold. Tighten discounting and monitor D2C returns.</li>
+                <li class="insight-item"><span class="material-icons-outlined" style="color:#f97316;">report_problem</span>Inventory carrying cost high vs COGS (30%). Accelerate clearance of ageing stock.</li>
+                <li class="insight-item"><span class="material-icons-outlined" style="color:#38bdf8;">lightbulb</span>Attrition hotspots easing, but Plant 3 still 1.1 pts above enterprise goal.</li>
+              </ul>
+            </article>
+            <article class="card">
+              <h3>AI Insights</h3>
+              <ul class="insight-list">
+                <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">psychology</span>Sales vs cost delta this period: ৳ 3360M. Channel incentives driving margin lift.</li>
+                <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">psychology</span>Top department by margin contribution: Consumer Electronics (৳ 1120M).</li>
+                <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">psychology</span>AI suggests redeploying ৳ 4200M inventory from DC South to DC North for 18% faster fulfilment.</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Department Scorecard</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Revenue (৳ M)</th>
+                  <th>Cost (৳ M)</th>
+                  <th>Margin (৳ M)</th>
+                  <th>Attendance %</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Consumer Electronics</td>
+                  <td>৳ 3620M</td>
+                  <td>৳ 2140M</td>
+                  <td>৳ 1480M</td>
+                  <td>97.2%</td>
+                </tr>
+                <tr>
+                  <td>Home & Living</td>
+                  <td>৳ 2640M</td>
+                  <td>৳ 1680M</td>
+                  <td>৳ 960M</td>
+                  <td>95.6%</td>
+                </tr>
+                <tr>
+                  <td>Supply Chain</td>
+                  <td>৳ 1140M</td>
+                  <td>৳ 840M</td>
+                  <td>৳ 300M</td>
+                  <td>93.4%</td>
+                </tr>
+                <tr>
+                  <td>Support & Shared</td>
+                  <td>৳ 380M</td>
+                  <td>৳ 240M</td>
+                  <td>৳ 140M</td>
+                  <td>91.8%</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card" style="gap: 18px;">
+            <h3>AI Forecast Outlook</h3>
+            <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+              <div class="surface" style="gap:12px;">
+                <span class="section-header">Sales Forecast</span>
+                <div class="metric">৳ 10420M</div>
+                <div class="trend">Model: Prophet Hybrid</div>
+                <span class="chip" style="background: rgba(16,185,129,0.15); color:#047857;">Confidence 86%</span>
+              </div>
+              <div class="surface" style="gap:12px;">
+                <span class="section-header">Production Forecast</span>
+                <div class="metric">৳ 7680M</div>
+                <div class="trend">Model: Prophet Hybrid</div>
+                <span class="chip" style="background: rgba(59,130,246,0.15); color:#1d4ed8;">Confidence 79%</span>
+              </div>
+              <div class="surface" style="gap:12px;">
+                <span class="section-header">Expense Forecast</span>
+                <div class="metric">৳ 5940M</div>
+                <div class="trend">Model: SARIMA</div>
+                <span class="chip" style="background: rgba(234,179,8,0.18); color:#92400e;">Confidence 68%</span>
+              </div>
+              <div class="surface" style="gap:12px;">
+                <span class="section-header">Inventory Forecast</span>
+                <div class="metric">৳ 1760M</div>
+                <div class="trend">Model: Prophet Hybrid</div>
+                <span class="chip" style="background: rgba(59,130,246,0.15); color:#1d4ed8;">Confidence 74%</span>
+              </div>
+              <div class="surface" style="gap:12px;">
+                <span class="section-header">Attrition Forecast</span>
+                <div class="metric">3.9</div>
+                <div class="trend">Model: IsolationForest</div>
+                <span class="chip" style="background: rgba(34,197,94,0.16); color:#047857;">Confidence 81%</span>
+              </div>
+              <div class="surface" style="gap:12px;">
+                <span class="section-header">Procurement Forecast</span>
+                <div class="metric">৳ 4240M</div>
+                <div class="trend">Model: Prophet Hybrid</div>
+                <span class="chip" style="background: rgba(59,130,246,0.15); color:#1d4ed8;">Confidence 76%</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="card" style="gap: 18px;">
+          <h3>BI Assistant</h3>
+          <div class="split-columns">
+            <div class="list-item">
+              <strong>Question</strong>
+              "Compare October cash burn vs September and list the top drivers."
+            </div>
+            <div class="list-item">
+              <strong>AI Response</strong>
+              October burn up ৳ 67M. Express logistics (+৳ 31M) and expedited raw materials (+৳ 24M) are main drivers. Recommend shifting 15% volume back to contract lanes and deferring two discretionary marketing campaigns.
+            </div>
+            <div class="list-item">
+              <strong>Follow-up</strong>
+              "If we release an extra ৳ 50M in working capital, how does EBITDA respond?"
+            </div>
+            <div class="list-item">
+              <strong>Assistant</strong>
+              EBITDA improves 0.7 pts with early vendor settlements, provided FX hedge is applied to USD exposure.
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="demo-footer">Static depiction of Executive BI dashboard. Launch the React app for live data, RBAC, and assistant interactions.</footer>
+    </main>
+  </div>
+
+  <script>
+    (function initExecutiveCharts() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          const ctx = document.getElementById('supplyTrend')
+          if (!ctx) return
+
+          window.iDashDemo.createChart(ctx, {
+            type: 'line',
+            data: {
+              labels: ['2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09'],
+              datasets: [
+                {
+                  label: 'PO Value',
+                  data: [6050, 6120, 6340, 6480, 6720, 6880],
+                  borderColor: '#2563eb',
+                  backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                  tension: 0.38,
+                  fill: true,
+                  pointRadius: 3,
+                  pointBackgroundColor: '#fff'
+                },
+                {
+                  label: 'GRN Value',
+                  data: [5980, 6040, 6200, 6320, 6480, 6620],
+                  borderColor: '#0ea5e9',
+                  backgroundColor: 'rgba(14, 165, 233, 0.18)',
+                  tension: 0.38,
+                  fill: true,
+                  pointRadius: 3,
+                  pointBackgroundColor: '#fff'
+                },
+                {
+                  label: 'Invoice Value',
+                  data: [5840, 5900, 6060, 6180, 6320, 6440],
+                  borderColor: '#f97316',
+                  backgroundColor: 'rgba(249, 115, 22, 0.18)',
+                  tension: 0.38,
+                  fill: true,
+                  pointRadius: 3,
+                  pointBackgroundColor: '#fff'
+                }
+              ]
+            },
+            options: {
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'bottom' }
+              },
+              scales: {
+                y: {
+                  grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false },
+                  ticks: {
+                    callback: (v) => `৳${v}M`
+                  }
+                },
+                x: { grid: { display: false } }
+              }
+            }
+          })
+        })
+      }
+
+      if (window.iDashDemo?.onReady) {
+        register()
+      } else {
+        document.addEventListener('iDashDemoReady', register, { once: true })
+      }
+    })()
+  </script>
+</body>
+</html>

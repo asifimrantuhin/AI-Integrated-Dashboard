@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash Executive Dashboard Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&family=Inter:wght@500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./../demo/assets/demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="./../demo/assets/demo.js" defer></script>
+  <style>
+    :root {
+      --primary: #1976d2;
+      --primary-light: rgba(25, 118, 210, 0.12);
+      --secondary: #dc004e;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --error: #dc2626;
+      --slate: #1e293b;
+      --muted: #64748b;
+      --bg: #f5f7fb;
+      --sidebar-bg: #ffffff;
+      --card-bg: #ffffff;
+      --border-radius-lg: 20px;
+      --border-radius-sm: 14px;
+      --shadow-sm: 0 6px 18px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      background: var(--bg);
+      color: var(--slate);
+      display: flex;
+    }
+
+    .app-shell {
+      display: flex;
+      width: 100%;
+    }
+
+    .sidebar {
+      width: 248px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid rgba(148, 163, 184, 0.18);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+
+    .sidebar-header {
+      padding: 28px 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sidebar-header h1 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .sidebar-header span {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      margin-top: 16px;
+    }
+
+    .sidebar-nav li button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 24px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 14px;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .sidebar-nav li button:hover {
+      background: rgba(15, 23, 42, 0.04);
+    }
+
+    .sidebar-nav li.active button {
+      color: var(--primary);
+      background: var(--primary-light);
+      border-left-color: var(--primary);
+    }
+
+    .sidebar .material-icons-outlined {
+      font-size: 20px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 20px 24px 24px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .main-region {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(180deg, rgba(25, 118, 210, 0.08) 0%, rgba(245, 247, 251, 1) 40%);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 32px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .topbar-title {
+      font-size: 20px;
+      font-weight: 600;
+      flex: 1;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(220, 0, 78, 0.1);
+      color: var(--secondary);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: capitalize;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #1d4ed8;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .content {
+      padding: 32px 40px 56px;
+      display: grid;
+      gap: 28px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .page-heading {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .page-heading h2 {
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .page-heading p {
+      max-width: 720px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .card .metric {
+      font-size: 30px;
+      font-weight: 700;
+    }
+
+    .delta {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--success);
+      background: rgba(22, 163, 74, 0.12);
+      width: fit-content;
+    }
+
+    .delta.negative {
+      color: var(--error);
+      background: rgba(220, 38, 38, 0.12);
+    }
+
+    .delta .material-icons-outlined {
+      font-size: 16px;
+    }
+
+    .trend {
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+    }
+
+    .chart-card {
+      padding: 24px 24px 18px;
+      box-shadow: var(--shadow-lg);
+      border-radius: var(--border-radius-lg);
+      background: var(--card-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 360px;
+    }
+
+    canvas {
+      width: 100% !important;
+      height: 220px !important;
+    }
+
+    .insight-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 12px;
+    }
+
+    .insight-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: rgba(25, 118, 210, 0.08);
+      border-radius: var(--border-radius-sm);
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .status-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .status-table th,
+    .status-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+      text-align: left;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(22, 163, 74, 0.12);
+      color: var(--success);
+    }
+
+    .status-pill.warning {
+      background: rgba(245, 158, 11, 0.14);
+      color: var(--warning);
+    }
+
+    .scenario-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 12px;
+    }
+
+    .scenario {
+      border-radius: var(--border-radius-sm);
+      padding: 14px 18px;
+      background: rgba(25, 118, 210, 0.1);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .scenario strong {
+      font-size: 15px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    footer {
+      padding: 12px 40px 40px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    @media (max-width: 1080px) {
+      .sidebar {
+        display: none;
+      }
+
+      .topbar {
+        padding: 16px 24px;
+      }
+
+      .content {
+        padding: 24px;
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        background: var(--bg);
+      }
+
+      .topbar {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li class="active"><button><span class="material-icons-outlined">insights</span>Executive BI</button></li>
+        <li><button><span class="material-icons-outlined">analytics</span>Reports</button></li>
+        <li><button><span class="material-icons-outlined">sync</span>Integration Jobs</button></li>
+        <li><button><span class="material-icons-outlined">trending_up</span>Sales</button></li>
+        <li><button><span class="material-icons-outlined">account_balance</span>Finance</button></li>
+        <li><button><span class="material-icons-outlined">precision_manufacturing</span>Production</button></li>
+        <li><button><span class="material-icons-outlined">inventory_2</span>Inventory</button></li>
+        <li><button><span class="material-icons-outlined">groups</span>HR</button></li>
+        <li><button><span class="material-icons-outlined">local_shipping</span>Supply Chain</button></li>
+      </ul>
+      <div class="sidebar-footer">Dynamic API sync • File ingestion • Audit logging</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Intelligent Management Dashboard</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">workspace_premium</span>executive</span>
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">psychology</span>analyst</span>
+        </div>
+        <div class="avatar">A</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Executive BI</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Executive Command Center</h2>
+          <p>
+            Unified predictive intelligence across finance, sales, inventory, workforce and supply chain. Data below represents the seeded sample provided with the
+            repository and mirrors the look of the live React interface .
+          </p>
+          <div class="meta-row">
+            <span>Company: Orbit Retail Group</span>
+            <span>Regions: APAC · EMEA</span>
+            <span>Updated: 09 Nov 2025 · 07:42 IST</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="card">
+            <h3>Total Revenue (TTM)</h3>
+            <div class="metric">৳ 9784M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+8.6% QoQ</div>
+            <div class="trend"><span class="material-icons-outlined" style="font-size:16px;">timeline</span>Prophet forecast indicates ৳ 10420M run-rate by Jan '26</div>
+          </article>
+          <article class="card">
+            <h3>Gross Margin</h3>
+            <div class="metric">34.2%</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+1.9 pts</div>
+            <div class="trend">Inventory optimization lowered holding costs by ৳ 63M</div>
+          </article>
+          <article class="card">
+            <h3>Inventory Health Index</h3>
+            <div class="metric">92 / 100</div>
+            <div class="delta"><span class="material-icons-outlined">verified</span>Best in FY25</div>
+            <div class="trend">31 SKUs flagged as slow movers • replenishment active for 18</div>
+          </article>
+          <article class="card">
+            <h3>Attrition Probability</h3>
+            <div class="metric">7.4%</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-2.1 pts</div>
+            <div class="trend">Retention stipend in Plant 3 reduced risk in night shifts</div>
+          </article>
+        </section>
+
+        <section class="grid-3">
+          <article class="chart-card">
+            <div>
+              <h3>Sales Forecast by Channel</h3>
+              <p style="color: var(--muted); font-size: 13px;">Actuals vs Prophet projection (৳ million)</p>
+            </div>
+            <canvas id="salesChart"></canvas>
+          </article>
+          <article class="chart-card">
+            <div>
+              <h3>Inventory Optimization</h3>
+              <p style="color: var(--muted); font-size: 13px;">Recommended reorder point vs current cover days</p>
+            </div>
+            <canvas id="inventoryChart"></canvas>
+          </article>
+          <article class="chart-card">
+            <div>
+              <h3>Financial Outlook</h3>
+              <p style="color: var(--muted); font-size: 13px;">Budget vs projected cash flow and EBITDA (৳ million)</p>
+            </div>
+            <canvas id="financeChart"></canvas>
+          </article>
+        </section>
+
+        <section class="grid-3">
+          <article class="card">
+            <h3>AI Insight Feed</h3>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">lightbulb</span>Dynamic pricing uplift on D2C adds ৳ 126M in Q4 if rolled out mid-cycle.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">lightbulb</span>Isolation Forest flagged logistics spend spike (+18%) on west corridor lane C.
+              </li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">lightbulb</span>Plant 3 attrition hotspot detected; wellbeing stipend reduces risk by 1.9 pts.</li>
+            </ul>
+          </article>
+
+          <article class="card" style="min-height: 340px;">
+            <h3>Data Sync Status</h3>
+            <table class="status-table">
+              <thead>
+                <tr>
+                  <th>Module</th>
+                  <th>Source</th>
+                  <th>Last Sync</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Sales</td>
+                  <td>Salesforce REST (hourly)</td>
+                  <td>07:40</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>162 rows</span></td>
+                </tr>
+                <tr>
+                  <td>Inventory</td>
+                  <td>Vendor FTP (file)</td>
+                  <td>06:55</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>89 SKUs</span></td>
+                </tr>
+                <tr>
+                  <td>Finance</td>
+                  <td>SAP BAPI (30 min)</td>
+                  <td>07:30</td>
+                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">error_outline</span>Latency +12m</span></td>
+                </tr>
+                <tr>
+                  <td>HR</td>
+                  <td>Workday GraphQL (hourly)</td>
+                  <td>07:25</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>98 profiles</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card">
+            <h3>What-if Scenario Explorer</h3>
+            <div class="scenario-list">
+              <div class="scenario">
+                <div>
+                  <strong>5% price uplift on D2C</strong>
+                  Revenue +৳ 420M • Attrition no impact • Inventory turns +0.3x
+                </div>
+                <span class="chip">AI recommended</span>
+              </div>
+              <div class="scenario" style="background: rgba(220, 38, 38, 0.1);">
+                <div>
+                  <strong>Advance raw material purchase</strong>
+                  Cash flow -৳ 180M • Margin +1.1 pts • Risk: FX volatility
+                </div>
+                <span class="chip negative">Requires hedge</span>
+              </div>
+              <div class="scenario">
+                <div>
+                  <strong>Overtime freeze in Plant 2</strong>
+                  Cost savings ৳ 64M • Throughput -4% • Attrition risk +0.6 pts
+                </div>
+                <span class="chip">Pending approval</span>
+              </div>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <footer>
+        Static preview built from the iDash UI components (React + Material UI) with illustrative demo figures. Use `run.bat` for the interactive stack.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    (function initDocsCharts() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          const colors = {
+            primary: '#2563eb',
+            primaryFill: 'rgba(37, 99, 235, 0.16)',
+            secondary: '#f97316',
+            success: '#22c55e',
+            neutral: '#64748b'
+          }
+
+          const salesCtx = document.getElementById('salesChart')
+          const inventoryCtx = document.getElementById('inventoryChart')
+          const financeCtx = document.getElementById('financeChart')
+
+          if (salesCtx) {
+            window.iDashDemo.createChart(salesCtx, {
+          type: 'line',
+          data: {
+            labels: ['Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25'],
+            datasets: [
+              {
+                label: 'Actual',
+                data: [680, 720, 740, 790, 820, 860, null],
+                borderColor: colors.primary,
+                backgroundColor: colors.primaryFill,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 3,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: colors.primary,
+                pointHoverRadius: 5
+              },
+              {
+                label: 'Forecast',
+                data: [null, null, null, 790, 850, 910, 940],
+                borderColor: colors.secondary,
+                backgroundColor: 'rgba(249, 115, 22, 0.18)',
+                borderDash: [6, 6],
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: colors.secondary
+              }
+            ]
+          },
+          options: {
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: false,
+                grid: { color: 'rgba(148,163,184,0.24)', drawBorder: false },
+                ticks: { callback: (v) => `৳${v}M` }
+              },
+              x: {
+                grid: { display: false }
+              }
+            },
+            plugins: {
+              legend: { display: true, position: 'bottom' },
+              tooltip: {
+                backgroundColor: '#0f172a',
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.08)',
+                padding: 12,
+                titleColor: '#cbd5f5',
+                bodyColor: '#e2e8f0',
+                callbacks: {
+                  label: (context) => {
+                    if (context.parsed.y === null) return ''
+                    return `${context.dataset.label}: ৳${context.parsed.y}M`
+                  }
+                }
+              }
+            }
+          }
+        })
+      }
+
+      if (inventoryCtx) {
+        window.iDashDemo.createChart(inventoryCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Electronics', 'Home', 'Grocery', 'Beauty', 'Fashion'],
+        datasets: [
+          {
+            label: 'Current Stock (days)',
+            data: [18, 32, 14, 26, 38],
+            backgroundColor: 'rgba(25, 118, 210, 0.78)',
+            borderRadius: 16,
+            maxBarThickness: 40
+          },
+          {
+            label: 'Recommended Reorder Point',
+            data: [16, 24, 10, 20, 28],
+            backgroundColor: 'rgba(34, 197, 94, 0.75)',
+            borderRadius: 16,
+            maxBarThickness: 40
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 5 },
+            grid: { color: 'rgba(148,163,184,0.24)', drawBorder: false }
+          },
+          x: {
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+        })
+      }
+
+      if (financeCtx) {
+        window.iDashDemo.createChart(financeCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26'],
+        datasets: [
+          {
+            label: 'Budgeted Cash Flow',
+            data: [520, 540, 550, 530, 510, 570, 590],
+            borderColor: colors.neutral,
+            borderWidth: 2.5,
+            pointRadius: 3,
+            tension: 0.35
+          },
+          {
+            label: 'Projected Cash Flow',
+            data: [510, 570, 600, 620, 640, 690, 740],
+            borderColor: colors.success,
+            borderWidth: 3,
+            pointRadius: 4,
+            pointBackgroundColor: '#fff',
+            tension: 0.35,
+            fill: false
+          },
+          {
+            label: 'EBITDA Forecast',
+            data: [180, 190, 220, 240, 260, 290, 320],
+            borderColor: colors.secondary,
+            borderWidth: 2.5,
+            pointRadius: 3,
+            borderDash: [5, 5],
+            tension: 0.3
+          }
+        ]
+      },
+      options: {
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: { color: 'rgba(148, 163, 184, 0.18)', drawBorder: false },
+            ticks: { callback: (value) => `৳${value}M` }
+          },
+          x: {
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+        })
+      }
+    })
+
+    if (window.iDashDemo?.onReady) {
+      register()
+    } else {
+      document.addEventListener('iDashDemoReady', register, { once: true })
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash · Production Excellence Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="./assets/demo.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="./executive-bi.html"><span class="material-icons-outlined">insights</span>Executive BI</a></li>
+        <li><a href="./reports.html"><span class="material-icons-outlined">analytics</span>Reports</a></li>
+        <li><a href="./sales.html"><span class="material-icons-outlined">trending_up</span>Sales</a></li>
+        <li><a href="./finance.html"><span class="material-icons-outlined">account_balance</span>Finance</a></li>
+        <li class="active"><a href="./production.html"><span class="material-icons-outlined">precision_manufacturing</span>Production</a></li>
+        <li><a href="./inventory.html"><span class="material-icons-outlined">inventory_2</span>Inventory</a></li>
+        <li><a href="./index.html"><span class="material-icons-outlined">apps</span>Back to Gallery</a></li>
+      </ul>
+      <div class="sidebar-footer">Throughput · Maintenance · Forecasts</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Production Excellence</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">factory</span>plant ops</span>
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">engineering</span>maintenance</span>
+        </div>
+        <div class="avatar">P</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Production</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Factory Performance Overview</h2>
+          <p>
+            Monitor throughput, efficiency, maintenance, and predictive alerts to keep every line running at peak performance. Mirrors the React production dashboard with demo values.
+          </p>
+          <div class="meta-row">
+            <span>Overall OEE: 87.4%</span>
+            <span>Downtime last 7 days: 6.1 hrs</span>
+            <span>Last refresh: 09 Nov 2025 · 07:36</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="card">
+            <h3>Units Produced (MTD)</h3>
+            <div class="metric">1.94 M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+4.6%</div>
+            <div class="trend">Plant 2 line B scaling ahead of target</div>
+          </article>
+          <article class="card">
+            <h3>Utilization</h3>
+            <div class="metric">91.2%</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+2.4 pts</div>
+            <div class="trend">Shift optimization adds 11k minutes capacity</div>
+          </article>
+          <article class="card">
+            <h3>Scrap Rate</h3>
+            <div class="metric">2.1%</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-0.4 pts</div>
+            <div class="trend">Vision QC reduced defects on Line D</div>
+          </article>
+          <article class="card">
+            <h3>Maintenance Backlog</h3>
+            <div class="metric">14 tickets</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-6</div>
+            <div class="trend">Critical backlog cleared in last 48 hours</div>
+          </article>
+        </section>
+
+        <section class="grid-3">
+          <article class="chart-card" style="grid-column: span 2;">
+            <div>
+              <h3>Production Trend</h3>
+              <p style="color: var(--muted); font-size: 13px;">Units vs capacity vs forecast</p>
+            </div>
+            <canvas id="productionTrendChart"></canvas>
+          </article>
+          <article class="card" style="min-height: 360px;">
+            <h3>Live Alerts</h3>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#fb7185;">warning</span>Plant 3 Line C overheating risk. Planned shutdown at 21:00.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#38bdf8;">build_circle</span>Maintenance ticket #4582 resolved. Bearing replaced.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">insights</span>AI suggests shifting 8% load from Plant 1 to Plant 2 for efficiency.
+              </li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Production Lines</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Line</th>
+                  <th>Throughput</th>
+                  <th>OEE</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Plant 1 · Line A</td>
+                  <td>312k units</td>
+                  <td>89%</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>Stable</span></td>
+                </tr>
+                <tr>
+                  <td>Plant 2 · Line B</td>
+                  <td>428k units</td>
+                  <td>93%</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">north_east</span>Scaling</span></td>
+                </tr>
+                <tr>
+                  <td>Plant 3 · Line C</td>
+                  <td>276k units</td>
+                  <td>82%</td>
+                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">error_outline</span>Monitor</span></td>
+                </tr>
+                <tr>
+                  <td>Plant 4 · Line D</td>
+                  <td>188k units</td>
+                  <td>79%</td>
+                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">change_circle</span>Ramp-up</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card" style="gap: 18px;">
+            <h3>Wastage Cost Hotspots</h3>
+            <div class="list">
+              <div class="list-item">
+                <strong>Injection Molding</strong>
+                ৳ 18M • Resin loss due to nozzle clogging. Scheduled CIP cycle.
+              </div>
+              <div class="list-item">
+                <strong>Packaging Line</strong>
+                ৳ 11M • Carton misprint batch. Supplier credit in progress.
+              </div>
+              <div class="list-item">
+                <strong>Assembly Line</strong>
+                ৳ 6M • Rework due to misaligned sensors. Technician training ongoing.
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Maintenance Issues</h3>
+            <div class="list">
+              <div class="list-item" style="background: rgba(220,38,38,0.1);">
+                <strong>Compressor C-17</strong>
+                Severity: High • Last serviced 32 days ago • Spare ETA 6 hrs.
+              </div>
+              <div class="list-item">
+                <strong>Conveyor PLC</strong>
+                Severity: Medium • Firmware patch scheduled tonight.
+              </div>
+              <div class="list-item">
+                <strong>Robot Arm #R5</strong>
+                Severity: Low • Calibration drift noticed • Quick tune required.
+              </div>
+            </div>
+          </article>
+          <article class="chart-card">
+            <div>
+              <h3>Throughput Forecast</h3>
+              <p style="color: var(--muted); font-size: 13px;">Prophet model (units in 100k)</p>
+            </div>
+            <canvas id="productionForecastChart"></canvas>
+          </article>
+        </section>
+      </section>
+
+      <footer class="demo-footer">Production dashboard preview. Full app provides drill-through to work orders and sensor telemetry.</footer>
+    </main>
+  </div>
+
+  <script>
+    (function initProductionCharts() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          const prodTrendCtx = document.getElementById('productionTrendChart')
+          if (prodTrendCtx) {
+            window.iDashDemo.createChart(prodTrendCtx, {
+              type: 'line',
+              data: {
+                labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [
+                  {
+                    label: 'Actual Units (100k)',
+                    data: [15.8, 16.4, 16.9, 17.6, 18.1, 18.7, 19.4],
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25,118,210,0.18)',
+                    fill: true,
+                    tension: 0.38,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Capacity',
+                    data: [17.2, 17.5, 17.8, 18.0, 18.2, 18.4, 18.6],
+                    borderColor: '#0f172a',
+                    borderDash: [5, 5],
+                    tension: 0.3,
+                    pointRadius: 0
+                  },
+                  {
+                    label: 'Forecast',
+                    data: [null, null, null, 17.6, 18.3, 19.0, 19.8],
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34,197,94,0.12)',
+                    tension: 0.36,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                  y: { grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false }, ticks: { callback: (v) => `${v} ×100k` } },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const prodForecastCtx = document.getElementById('productionForecastChart')
+          if (prodForecastCtx) {
+            window.iDashDemo.createChart(prodForecastCtx, {
+              type: 'line',
+              data: {
+                labels: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+                datasets: [
+                  {
+                    label: 'Forecast Units (100k)',
+                    data: [19.6, 20.4, 18.8, 18.2, 19.0, 20.3],
+                    borderColor: '#f97316',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.32
+                  },
+                  {
+                    label: 'Confidence Low',
+                    data: [18.9, 19.6, 17.9, 17.4, 18.2, 19.4],
+                    borderColor: 'rgba(249,115,22,0.2)',
+                    fill: '+1',
+                    tension: 0.32,
+                    pointRadius: 0
+                  },
+                  {
+                    label: 'Confidence High',
+                    data: [20.2, 21.1, 19.7, 19.0, 19.8, 21.2],
+                    borderColor: 'rgba(249,115,22,0.2)',
+                    backgroundColor: 'rgba(249,115,22,0.12)',
+                    tension: 0.32,
+                    pointRadius: 0
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                  y: { ticks: { callback: (v) => `${v} ×100k` }, grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false } },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+        })
+      }
+
+      if (window.iDashDemo?.onReady) {
+        register()
+      } else {
+        document.addEventListener('iDashDemoReady', register, { once: true })
+      }
+    })()
+  </script>
+</body>
+</html>

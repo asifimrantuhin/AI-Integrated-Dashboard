@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash · Reports Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/demo.css" />
+  <script src="./assets/demo.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="./executive-bi.html"><span class="material-icons-outlined">insights</span>Executive BI</a></li>
+        <li class="active"><a href="./reports.html"><span class="material-icons-outlined">analytics</span>Reports</a></li>
+        <li><a href="./sales.html"><span class="material-icons-outlined">trending_up</span>Sales</a></li>
+        <li><a href="./finance.html"><span class="material-icons-outlined">account_balance</span>Finance</a></li>
+        <li><a href="./production.html"><span class="material-icons-outlined">precision_manufacturing</span>Production</a></li>
+        <li><a href="./inventory.html"><span class="material-icons-outlined">inventory_2</span>Inventory</a></li>
+        <li><a href="./index.html"><span class="material-icons-outlined">apps</span>Back to Gallery</a></li>
+      </ul>
+      <div class="sidebar-footer">Exports · Scheduling · Audit Trails</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Reports &amp; Exports</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">summarize</span>report admin</span>
+        </div>
+        <div class="avatar">R</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Reports</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Operational Reporting</h2>
+          <p>
+            Generate scheduled or on-demand exports for finance, sales, production, and HR. Filters mimic the API contract of the live system, with sample data shown below.
+          </p>
+          <div class="meta-row">
+            <span>Available templates: 18</span>
+            <span>Last export: 09 Nov 2025 · 07:35</span>
+            <span>Formats: JSON · CSV · XLSX</span>
+          </div>
+        </div>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <div class="section-header">Report Catalogue</div>
+            <div class="list">
+              <div class="list-item">
+                <strong>executive_kpi_rollup</strong>
+                Consolidated monthly KPI view for leadership deck.
+                <div class="meta-row" style="gap:8px;">
+                  <span class="badge">finance</span>
+                  <span class="badge">monthly</span>
+                </div>
+              </div>
+              <div class="list-item" style="background: linear-gradient(135deg, rgba(37,99,235,0.18), rgba(59,130,246,0.1)); border: 1px solid rgba(37,99,235,0.2);">
+                <strong>sales_channel_performance</strong>
+                Channel &amp; region breakdown with forecast overlays.
+                <div class="meta-row" style="gap:8px;">
+                  <span class="badge">sales</span>
+                  <span class="badge">selected</span>
+                  <span class="badge">forecast</span>
+                </div>
+              </div>
+              <div class="list-item">
+                <strong>inventory_risk_heatmap</strong>
+                SKU coverage, slow movers, and recommended diversions.
+                <div class="meta-row" style="gap:8px;">
+                  <span class="badge">inventory</span>
+                  <span class="badge">weekly</span>
+                </div>
+              </div>
+              <div class="list-item">
+                <strong>workforce_attrition_watch</strong>
+                Attrition probability, engagement scores, interventions.
+                <div class="meta-row" style="gap:8px;">
+                  <span class="badge">hr</span>
+                  <span class="badge">daily</span>
+                </div>
+              </div>
+            </div>
+            <a class="button" href="#">View full catalogue</a>
+          </article>
+
+          <article class="card" style="gap: 20px;">
+            <div class="toolbar-row">
+              <div>
+                <div class="section-header">Generate Report</div>
+                <small style="color: var(--muted);">Selected template: <strong>sales_channel_performance</strong></small>
+              </div>
+              <div class="toolbar-actions">
+                <a class="button secondary" href="#">Schedule</a>
+                <a class="button" href="#">Run Report</a>
+              </div>
+            </div>
+
+            <div class="filter-grid">
+              <div class="input">
+                <label>Company</label>
+                <select>
+                  <option>Orbit Retail Group</option>
+                  <option>Orbit Europe</option>
+                </select>
+              </div>
+              <div class="input">
+                <label>Channel</label>
+                <select>
+                  <option>All Channels</option>
+                  <option>D2C</option>
+                  <option>Retail</option>
+                  <option>Distribution</option>
+                </select>
+              </div>
+              <div class="input">
+                <label>Start Month</label>
+                <input type="month" value="2025-04" />
+              </div>
+              <div class="input">
+                <label>End Month</label>
+                <input type="month" value="2025-09" />
+              </div>
+              <div class="input">
+                <label>Format</label>
+                <select>
+                  <option>JSON</option>
+                  <option>CSV</option>
+                  <option>XLSX</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="alert info">
+              <span class="material-icons-outlined" style="font-size:20px;">info</span>
+              Preview shows first 100 rows. CSV/XLSX downloads resume with background job via queue worker.
+            </div>
+
+            <table class="table" id="reportPreview">
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Channel</th>
+                  <th>Revenue (৳ M)</th>
+                  <th>Plan Variance</th>
+                  <th>Forecast Next (৳ M)</th>
+                  <th>Risk Score</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </article>
+        </section>
+      </section>
+
+      <footer class="demo-footer">Reports module preview. Full functionality available via React + API stack.</footer>
+    </main>
+  </div>
+
+  <script>
+     const previewRows = [
+       ['Apr 2025', 'D2C', '৳ 118M', '+6.2%', '৳ 124M', 'Low'],
+       ['Apr 2025', 'Retail', '৳ 94M', '-2.1%', '৳ 97M', 'Medium'],
+       ['May 2025', 'Distribution', '৳ 87M', '+3.4%', '৳ 93M', 'Low'],
+       ['Jun 2025', 'Marketplace', '৳ 75M', '+1.8%', '৳ 79M', 'Medium'],
+       ['Jul 2025', 'D2C', '৳ 123M', '+7.4%', '৳ 131M', 'Low'],
+       ['Aug 2025', 'Retail', '৳ 102M', '+2.7%', '৳ 108M', 'Medium'],
+       ['Sep 2025', 'Distribution', '৳ 93M', '+5.1%', '৳ 100M', 'Low'],
+       ['Sep 2025', 'Marketplace', '৳ 82M', '+1.4%', '৳ 88M', 'Medium']
+     ]
+ 
+    (function initReportsTable() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          window.iDashDemo.populateTable('reportPreview', previewRows)
+        })
+      }
+
+      if (window.iDashDemo?.onReady) {
+        register()
+      } else {
+        document.addEventListener('iDashDemoReady', register, { once: true })
+      }
+    })()
+  </script>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash · Sales Dashboard Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="./assets/demo.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="./executive-bi.html"><span class="material-icons-outlined">insights</span>Executive BI</a></li>
+        <li><a href="./reports.html"><span class="material-icons-outlined">analytics</span>Reports</a></li>
+        <li class="active"><a href="./sales.html"><span class="material-icons-outlined">trending_up</span>Sales</a></li>
+        <li><a href="./finance.html"><span class="material-icons-outlined">account_balance</span>Finance</a></li>
+        <li><a href="./production.html"><span class="material-icons-outlined">precision_manufacturing</span>Production</a></li>
+        <li><a href="./inventory.html"><span class="material-icons-outlined">inventory_2</span>Inventory</a></li>
+        <li><a href="./index.html"><span class="material-icons-outlined">apps</span>Back to Gallery</a></li>
+      </ul>
+      <div class="sidebar-footer">Pipeline • Forecast • Channel Insights</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Sales Intelligence</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">leaderboard</span>sales manager</span>
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">auto_graph</span>forecast</span>
+        </div>
+        <div class="avatar">S</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Sales</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Sales Intelligence</h2>
+          <p>Track billed revenue, target achievement, collections, and demand signals across every channel. Data points below mirror the `/sales/overview` contract.</p>
+          <div class="meta-row">
+            <span>Period: September 2025</span>
+            <span>Company: Orbit Retail Group</span>
+            <span>Last refreshed: 09 Nov 2025 · 07:41</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="card">
+            <h3>Monthly Sales</h3>
+            <div class="metric">৳ 2865M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+6.8% YoY</div>
+            <div class="trend">vs ৳ 2682M last year</div>
+          </article>
+          <article class="card">
+            <h3>Target Achievement %</h3>
+            <div class="metric">108.4%</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+3.4 pts</div>
+            <div class="trend">Targets beaten for four months straight</div>
+          </article>
+          <article class="card">
+            <h3>Primary Collection</h3>
+            <div class="metric">৳ 2462M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+5.1%</div>
+            <div class="trend">Collection gap within 12% tolerance</div>
+          </article>
+          <article class="card">
+            <h3>Primary Due</h3>
+            <div class="metric">৳ 403M</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-৳ 46M</div>
+            <div class="trend">Top 12 distributors flagged for follow-up</div>
+          </article>
+          <article class="card">
+            <h3>IMS</h3>
+            <div class="metric">৳ 1869M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+3.2%</div>
+            <div class="trend">Channel fill improving in north and east</div>
+          </article>
+          <article class="card">
+            <h3>IMS Due</h3>
+            <div class="metric">৳ 224M</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-৳ 21M</div>
+            <div class="trend">Retail collections caught up after festival</div>
+          </article>
+          <article class="card">
+            <h3>Market Collection</h3>
+            <div class="metric">৳ 1645M</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+4.4%</div>
+            <div class="trend">Marketplace payout cycle normalized</div>
+          </article>
+        </section>
+
+        <section class="grid-2" style="grid-template-columns: 2fr 1fr;">
+          <article class="chart-card" style="min-height: 380px;">
+            <div>
+              <h3>Sales Trend</h3>
+              <p style="color: var(--muted); font-size: 13px;">Billed vs target (৳ million)</p>
+            </div>
+            <canvas id="salesTrend"></canvas>
+          </article>
+          <article class="card" style="min-height: 380px;">
+            <h3>Alerts & Forecast Summary</h3>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#fb7185;">warning_amber</span>Retail channel is 6% behind plan. Push festive combo offers over the weekend.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#f97316;">trending_up</span>Marketplace flash sale projected to add ৳ 184M revenue at 32% margin.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#0ea5e9;">analytics</span>Forecast (30 days): ৳ 3120M · Avg daily ৳ 104M · Confidence 87% (Prophet Hybrid).</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap:18px;">
+            <div class="section-header">Channel Recommendations <span style="color:var(--muted); font-size:12px;">3 recommendations</span></div>
+            <div class="list">
+              <div class="list-item">
+                <strong>D2C · Boost performance media</strong>
+                Reallocate ৳ 45M from TV burst to high intent search to sustain +11% ROAS.
+              </div>
+              <div class="list-item">
+                <strong>Retail · Refresh merchandising</strong>
+                Roll out festive bundles to lift MOM contribution by ৳ 94M over baseline.
+              </div>
+              <div class="list-item">
+                <strong>Distribution · Tiered rebate</strong>
+                Incentivise top 10 partners for +4.2% volume lift with controlled margin impact.
+              </div>
+            </div>
+          </article>
+          <article class="card" style="gap:18px;">
+            <div class="section-header">Anomaly Alerts <span style="color:var(--muted); font-size:12px;">2 anomalies detected</span></div>
+            <div class="list">
+              <div class="list-item" style="background: rgba(220,38,38,0.12);">
+                <strong>North Retail ↓ 18%</strong>
+                Severity: high · Reason: competitor pricing. Action: launch cashback & in-store demos.
+              </div>
+              <div class="list-item" style="background: rgba(249,115,22,0.12);">
+                <strong>Marketplace returns ↑ 11%</strong>
+                Severity: medium · Action: flag SKU S341 quality issue, initiate QC and vendor audit.
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Channel Performance</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Channel</th>
+                  <th style="text-align:right;">Sales (৳ M)</th>
+                  <th style="text-align:right;">Target (৳ M)</th>
+                  <th style="text-align:right;">Achievement</th>
+                  <th style="text-align:right;">Contribution</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>D2C</td>
+                  <td style="text-align:right;">৳ 1128M</td>
+                  <td style="text-align:right;">৳ 1026M</td>
+                  <td style="text-align:right;">
+                    <div class="progress"><span style="width:110%; background:#16a34a;"></span></div>
+                    <span style="font-size:12px;">110.0%</span>
+                  </td>
+                  <td style="text-align:right;">39.4%</td>
+                </tr>
+                <tr>
+                  <td>Retail</td>
+                  <td style="text-align:right;">৳ 845M</td>
+                  <td style="text-align:right;">৳ 882M</td>
+                  <td style="text-align:right;">
+                    <div class="progress"><span style="width:96%;"></span></div>
+                    <span style="font-size:12px;">95.8%</span>
+                  </td>
+                  <td style="text-align:right;">29.5%</td>
+                </tr>
+                <tr>
+                  <td>Distribution</td>
+                  <td style="text-align:right;">৳ 589M</td>
+                  <td style="text-align:right;">৳ 524M</td>
+                  <td style="text-align:right;">
+                    <div class="progress"><span style="width:112%; background:#16a34a;"></span></div>
+                    <span style="font-size:12px;">112.4%</span>
+                  </td>
+                  <td style="text-align:right;">20.6%</td>
+                </tr>
+                <tr>
+                  <td>Marketplace</td>
+                  <td style="text-align:right;">৳ 303M</td>
+                  <td style="text-align:right;">৳ 264M</td>
+                  <td style="text-align:right;">
+                    <div class="progress"><span style="width:115%; background:#16a34a;"></span></div>
+                    <span style="font-size:12px;">115.2%</span>
+                  </td>
+                  <td style="text-align:right;">10.5%</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+
+          <article class="card" style="gap: 18px;">
+            <h3>Top Product Movers</h3>
+            <div class="list">
+              <div class="list-item">
+                <strong>HyperPulse Smartwatch</strong>
+                ৳ 214M · Qty 1.82L · Growth +14% · Channel: D2C
+              </div>
+              <div class="list-item">
+                <strong>NovaPods Earbuds</strong>
+                ৳ 181M · Qty 2.74L · Growth -4% · Suggest limited-edition colours.
+              </div>
+              <div class="list-item">
+                <strong>FreshBlend Juicers</strong>
+                ৳ 127M · Qty 68K · Growth +12% · Retail demos driving conversion.
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="chart-card">
+          <div>
+            <h3>Sales Forecast (30 Days)</h3>
+            <p style="color: var(--muted); font-size: 13px;">Prophet output with confidence interval (৳ million)</p>
+          </div>
+          <canvas id="salesForecast"></canvas>
+        </section>
+
+        <section class="card" style="gap: 18px;">
+          <h3>What-if Impact</h3>
+          <div class="scenario-list">
+            <div class="scenario">
+              <div>
+                <strong>Festive Cashback (5%)</strong>
+                Revenue +৳ 320M · Margin -0.4 pts · Forecast win-rate +3 pts
+              </div>
+              <span class="delta" style="margin:0;">AI recommended</span>
+            </div>
+            <div class="scenario" style="background: rgba(249,115,22,0.12);">
+              <div>
+                <strong>Reduce Marketplace Discount</strong>
+                Revenue -৳ 90M · Margin +0.6 pts · Risk of churn in tier-2 cities
+              </div>
+              <span class="delta negative" style="margin:0;">Review</span>
+            </div>
+            <div class="scenario">
+              <div>
+                <strong>Double Telesales Headcount</strong>
+                Revenue +৳ 140M · Cost +৳ 32M · Payback 2.5 months
+              </div>
+              <span class="delta" style="margin:0;">Feasible</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="demo-footer">Static rendition of the Sales dashboard tied to the `/sales/overview` response structure.</footer>
+    </main>
+  </div>
+
+  <script>
+    (function initSalesCharts() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          const trendCtx = document.getElementById('salesTrend')
+          if (trendCtx) {
+            window.iDashDemo.createChart(trendCtx, {
+              type: 'line',
+              data: {
+                labels: ['2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09'],
+                datasets: [
+                  {
+                    label: 'Billed',
+                    data: [2180, 2320, 2450, 2580, 2660, 2860],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.16)',
+                    tension: 0.38,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Target',
+                    data: [2120, 2250, 2380, 2480, 2560, 2640],
+                    borderColor: '#ff9800',
+                    backgroundColor: 'rgba(255, 152, 0, 0.14)',
+                    borderDash: [6, 6],
+                    tension: 0.32,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
+                },
+                scales: {
+                  y: {
+                    grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false },
+                    ticks: {
+                      callback: (v) => `৳${v}M`
+                    }
+                  },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const forecastCtx = document.getElementById('salesForecast')
+          if (forecastCtx) {
+            window.iDashDemo.createChart(forecastCtx, {
+              type: 'line',
+              data: {
+                labels: ['Oct 20', 'Oct 27', 'Nov 03', 'Nov 10', 'Nov 17', 'Nov 24', 'Dec 01'],
+                datasets: [
+                  {
+                    label: 'Forecast',
+                    data: [2960, 3020, 3080, 3140, 3210, 3290, 3360],
+                    borderColor: '#16a34a',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.32
+                  },
+                  {
+                    label: 'Lower Bound',
+                    data: [2840, 2900, 2960, 3010, 3080, 3140, 3200],
+                    borderColor: 'rgba(22, 163, 74, 0.2)',
+                    pointRadius: 0,
+                    tension: 0.32,
+                    fill: '+1'
+                  },
+                  {
+                    label: 'Upper Bound',
+                    data: [3080, 3140, 3200, 3270, 3340, 3420, 3520],
+                    borderColor: 'rgba(22, 163, 74, 0.2)',
+                    backgroundColor: 'rgba(22, 163, 74, 0.12)',
+                    pointRadius: 0,
+                    tension: 0.32
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
+                },
+                scales: {
+                  y: {
+                    ticks: { callback: (v) => `৳${v}M` },
+                    grid: { color: 'rgba(148,163,184,0.16)', drawBorder: false }
+                  },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+        })
+      }
+
+      if (window.iDashDemo?.onReady) {
+        register()
+      } else {
+        document.addEventListener('iDashDemoReady', register, { once: true })
+      }
+    })()
+  </script>
+</body>
+</html>

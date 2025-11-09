@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iDash · Inventory Control Tower Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/demo.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+  <script src="./assets/demo.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <span>Intelligent Suite</span>
+        <h1>iDash</h1>
+        <div style="color: var(--muted); font-size: 13px;">Orbit Retail Group</div>
+      </div>
+      <ul class="sidebar-nav">
+        <li><a href="./executive-bi.html"><span class="material-icons-outlined">insights</span>Executive BI</a></li>
+        <li><a href="./reports.html"><span class="material-icons-outlined">analytics</span>Reports</a></li>
+        <li><a href="./sales.html"><span class="material-icons-outlined">trending_up</span>Sales</a></li>
+        <li><a href="./finance.html"><span class="material-icons-outlined">account_balance</span>Finance</a></li>
+        <li><a href="./production.html"><span class="material-icons-outlined">precision_manufacturing</span>Production</a></li>
+        <li class="active"><a href="./inventory.html"><span class="material-icons-outlined">inventory_2</span>Inventory</a></li>
+        <li><a href="./index.html"><span class="material-icons-outlined">apps</span>Back to Gallery</a></li>
+      </ul>
+      <div class="sidebar-footer">Coverage · Slow Movers · Forecast</div>
+    </aside>
+
+    <main class="main-region">
+      <header class="topbar">
+        <div class="topbar-title">Inventory Control Tower</div>
+        <div class="chip-row">
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">inventory</span>inventory</span>
+          <span class="chip"><span class="material-icons-outlined" style="font-size:16px;">bar_chart</span>optimization</span>
+        </div>
+        <div class="avatar">I</div>
+      </header>
+
+      <section class="content">
+        <div class="breadcrumb">
+          <span class="material-icons-outlined" style="font-size:18px;">home</span>
+          <span>Home</span>
+          <span class="material-icons-outlined" style="font-size:16px; color: rgba(148,163,184,0.8);">chevron_right</span>
+          <strong>Inventory</strong>
+        </div>
+
+        <div class="page-heading">
+          <h2>Stock Health &amp; Optimization</h2>
+          <p>
+            Balance stock, cash, and service levels with predictive coverage insights. Static render mirrors the React inventory dashboard using demo data.
+          </p>
+          <div class="meta-row">
+            <span>Net inventory value: ৳ 6540M</span>
+            <span>Coverage: 42 days</span>
+            <span>Last refresh: 09 Nov 2025 · 07:37</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid">
+          <article class="card">
+            <h3>Healthy Stock %</h3>
+            <div class="metric">72%</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+3 pts</div>
+            <div class="trend">Automated replenishment improved coverage balance</div>
+          </article>
+          <article class="card">
+            <h3>Slow Movers</h3>
+            <div class="metric">31 SKUs</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-9</div>
+            <div class="trend">Markdown program removed aging items</div>
+          </article>
+          <article class="card">
+            <h3>Fill Rate</h3>
+            <div class="metric">96.4%</div>
+            <div class="delta"><span class="material-icons-outlined">north_east</span>+1.4 pts</div>
+            <div class="trend">Safety stock tuned per propensity model</div>
+          </article>
+          <article class="card">
+            <h3>Carrying Cost</h3>
+            <div class="metric">৳ 147M</div>
+            <div class="delta negative"><span class="material-icons-outlined">south_east</span>-৳ 18M</div>
+            <div class="trend">Warehouse consolidation trimmed holding cost</div>
+          </article>
+        </section>
+
+        <section class="grid-3">
+          <article class="chart-card" style="grid-column: span 2;">
+            <div>
+              <h3>Inventory Value Trend</h3>
+              <p style="color: var(--muted); font-size: 13px;">Value vs target (৳ million)</p>
+            </div>
+            <canvas id="inventoryTrendChart"></canvas>
+          </article>
+          <article class="card" style="min-height: 360px;">
+            <h3>Alerts &amp; Forecast</h3>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#fb7185;">warning</span>SKU S341 at 68 days coverage. Trigger clearance campaign.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#22c55e;">task_alt</span>Auto reorder executed for 18 SKUs across Plant 2.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">insights</span>AI predicts service risk if D2C demand spikes by 8% next month.
+              </li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Inventory Actions</h3>
+            <div class="list">
+              <div class="list-item">
+                <strong>Redistribute stock to South DC</strong>
+                Reduce delivery SLA by 2.2 days for top 50 SKUs.
+              </div>
+              <div class="list-item">
+                <strong>Enable dynamic safety stocks</strong>
+                Use AI predictions to adjust thresholds daily.
+              </div>
+              <div class="list-item">
+                <strong>Offer bundle kits</strong>
+                Tie-in slow movers with high velocity SKUs to clear inventory.
+              </div>
+            </div>
+          </article>
+          <article class="card" style="gap: 18px;">
+            <h3>Slow Movers Watchlist</h3>
+            <div class="list">
+              <div class="list-item" style="background: rgba(220,38,38,0.1);">
+                <strong>SKU S341 · SmartCam Pro</strong>
+                68 days coverage • Markdown -15% recommended.
+              </div>
+              <div class="list-item">
+                <strong>SKU H218 · Home Heater</strong>
+                54 days coverage • Bundle with thermostat.
+              </div>
+              <div class="list-item">
+                <strong>SKU B907 · Beauty Kit</strong>
+                49 days coverage • Flash sale + influencer push.
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Category Split</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Value (৳ M)</th>
+                  <th>Coverage (days)</th>
+                  <th>Turns</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Electronics</td>
+                  <td>৳ 2140M</td>
+                  <td>38</td>
+                  <td>8.4×</td>
+                </tr>
+                <tr>
+                  <td>Home</td>
+                  <td>৳ 1460M</td>
+                  <td>44</td>
+                  <td>6.2×</td>
+                </tr>
+                <tr>
+                  <td>Grocery</td>
+                  <td>৳ 980M</td>
+                  <td>28</td>
+                  <td>12.1×</td>
+                </tr>
+                <tr>
+                  <td>Beauty</td>
+                  <td>৳ 740M</td>
+                  <td>36</td>
+                  <td>7.8×</td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+          <article class="card" style="gap: 18px;">
+            <h3>Warehouse Snapshot</h3>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Facility</th>
+                  <th>Coverage</th>
+                  <th>Capacity</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>DC North</td>
+                  <td>36 days</td>
+                  <td>82%</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>Balanced</span></td>
+                </tr>
+                <tr>
+                  <td>DC South</td>
+                  <td>44 days</td>
+                  <td>91%</td>
+                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">change_circle</span>Reallocate</span></td>
+                </tr>
+                <tr>
+                  <td>Plant 2</td>
+                  <td>39 days</td>
+                  <td>76%</td>
+                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">north_east</span>Improving</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card" style="gap: 18px;">
+            <h3>Turnover &amp; Ageing</h3>
+            <div class="list">
+              <div class="list-item">
+                <strong>Overall Turns</strong>
+                7.4× (↑ 0.6 vs LY) • 90+ day stock reduced by 18%.
+              </div>
+              <div class="list-item">
+                <strong>Working Capital</strong>
+                ৳ 1120M locked in stock • Opportunity to free ৳ 340M.
+              </div>
+              <div class="list-item">
+                <strong>Ageing Breakdown</strong>
+                0-30 days: 46% • 31-60: 32% • 61-90: 14% • 90+: 8%.
+              </div>
+            </div>
+          </article>
+          <article class="chart-card">
+            <div>
+              <h3>Inventory Forecast</h3>
+              <p style="color: var(--muted); font-size: 13px;">Projected value vs optimal band (৳ million)</p>
+            </div>
+            <canvas id="inventoryForecastChart"></canvas>
+          </article>
+        </section>
+
+        <section class="card">
+          <h3>Scenario Planning</h3>
+          <div class="scenario-list">
+            <div class="scenario">
+              <div>
+                <strong>Run 48-hour flash sale</strong>
+                Stock -৳ 340M • Revenue +৳ 580M • Service level 98.2%
+              </div>
+              <span class="delta" style="margin:0;">AI recommended</span>
+            </div>
+            <div class="scenario" style="background: rgba(249,115,22,0.12);">
+              <div>
+                <strong>Delay inbound PO</strong>
+                Stock -৳ 180M • Risk: fill rate drops 1.1 pts • Cash +৳ 180M
+              </div>
+              <span class="delta" style="margin:0;">Watch</span>
+            </div>
+            <div class="scenario">
+              <div>
+                <strong>Convert Plant 1 bay to cross-dock</strong>
+                Stock -৳ 220M • Lead time -1.8 days • Implementation 3 weeks
+              </div>
+              <span class="delta" style="margin:0;">High ROI</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <footer class="demo-footer">Inventory dashboard preview. The live system merges API ingestions and AI forecasts for continuous optimization.</footer>
+    </main>
+  </div>
+
+  <script>
+    (function initInventoryCharts() {
+      const register = () => {
+        window.iDashDemo.onReady(() => {
+          const invTrendCtx = document.getElementById('inventoryTrendChart')
+          if (invTrendCtx) {
+            window.iDashDemo.createChart(invTrendCtx, {
+              type: 'line',
+              data: {
+                labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [
+                  {
+                    label: 'Inventory Value',
+                    data: [6120, 6240, 6380, 6460, 6520, 6600, 6540],
+                    borderColor: '#1976d2',
+                    backgroundColor: 'rgba(25,118,210,0.18)',
+                    fill: true,
+                    tension: 0.36,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Target Band High',
+                    data: [6400, 6500, 6600, 6700, 6800, 6880, 6900],
+                    borderColor: 'rgba(34,197,94,0.4)',
+                    tension: 0.3,
+                    pointRadius: 0,
+                    fill: '-1'
+                  },
+                  {
+                    label: 'Target Band Low',
+                    data: [5800, 5900, 6000, 6080, 6160, 6240, 6300],
+                    borderColor: 'rgba(34,197,94,0.4)',
+                    backgroundColor: 'rgba(34,197,94,0.12)',
+                    tension: 0.3,
+                    pointRadius: 0
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                  y: {
+                    grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false },
+                    ticks: { callback: (v) => `৳${v}M` }
+                  },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const invForecastCtx = document.getElementById('inventoryForecastChart')
+          if (invForecastCtx) {
+            window.iDashDemo.createChart(invForecastCtx, {
+              type: 'line',
+              data: {
+                labels: ['Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+                datasets: [
+                  {
+                    label: 'Projected Value',
+                    data: [6480, 6360, 6220, 6180, 6260, 6340],
+                    borderColor: '#22c55e',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.32
+                  },
+                  {
+                    label: 'Optimal Upper',
+                    data: [6700, 6600, 6480, 6420, 6500, 6580],
+                    borderColor: 'rgba(34,197,94,0.3)',
+                    borderDash: [6, 6],
+                    tension: 0.32,
+                    pointRadius: 0
+                  },
+                  {
+                    label: 'Optimal Lower',
+                    data: [6200, 6100, 5980, 5920, 6000, 6060],
+                    borderColor: 'rgba(34,197,94,0.3)',
+                    borderDash: [6, 6],
+                    tension: 0.32,
+                    pointRadius: 0
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                  y: {
+                    ticks: { callback: (v) => `৳${v}M` },
+                    grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false }
+                  },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+        })
+      }
+
+      if (window.iDashDemo?.onReady) {
+        register()
+      } else {
+        document.addEventListener('iDashDemoReady', register, { once: true })
+      }
+    })()
+  </script>
+</body>
+</html>
