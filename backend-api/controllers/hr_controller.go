@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"idash-backend-api/database"
 	"idash-backend-api/models"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -252,9 +254,9 @@ func GetEmployeeTranOverSummary(c echo.Context) error {
 	endDate := startDate.AddDate(0, 1, 0).Add(-24 * time.Hour)
 
 	type TranOverSummary struct {
-		Type            string  `json:"type"`
-		TotalAmount     float64 `json:"total_amount"`
-		TotalCount      int     `json:"total_count"`
+		Type        string  `json:"type"`
+		TotalAmount float64 `json:"total_amount"`
+		TotalCount  int     `json:"total_count"`
 	}
 
 	var summary []TranOverSummary
@@ -287,8 +289,8 @@ type DepartmentPerformance struct {
 }
 
 type WorkforceMovement struct {
-	Type       string  `json:"type"`
-	TotalCount int     `json:"total_count"`
+	Type        string  `json:"type"`
+	TotalCount  int     `json:"total_count"`
 	TotalAmount float64 `json:"total_amount"`
 }
 
@@ -315,13 +317,16 @@ type HRForecastSummary struct {
 }
 
 type HROverviewResponse struct {
-	KPIs        []HRKPI               `json:"kpis"`
-	Departments []DepartmentPerformance `json:"departments"`
-	Movements   []WorkforceMovement   `json:"movements"`
-	Trend       []HRTrendPoint        `json:"trend"`
-	Forecast    *HRForecastSummary    `json:"forecast"`
-	Alerts      []string              `json:"alerts"`
-	LastUpdated time.Time             `json:"last_updated"`
+	KPIs             []HRKPI                  `json:"kpis"`
+	Departments      []DepartmentPerformance  `json:"departments"`
+	Movements        []WorkforceMovement      `json:"movements"`
+	Trend            []HRTrendPoint           `json:"trend"`
+	Forecast         *HRForecastSummary       `json:"forecast"`
+	Alerts           []string                 `json:"alerts"`
+	Insights         []string                 `json:"insights"`
+	Recommendations  []map[string]interface{} `json:"recommendations,omitempty"`
+	ExecutiveSummary []string                 `json:"executive_summary,omitempty"`
+	LastUpdated      time.Time                `json:"last_updated"`
 }
 
 type hrSummaryRow struct {
@@ -336,6 +341,12 @@ type hrForecastDetail struct {
 	Forecast   float64 `json:"forecast"`
 	UpperBound float64 `json:"upper_bound"`
 	LowerBound float64 `json:"lower_bound"`
+}
+
+type hrInsightResponse struct {
+	ExecutiveSummary   []string                 `json:"executive_summary"`
+	Insights           []string                 `json:"insights"`
+	RecommendedActions []map[string]interface{} `json:"recommended_actions"`
 }
 
 func GetHROverview(c echo.Context) error {
@@ -354,12 +365,15 @@ func GetHROverview(c echo.Context) error {
 	prevEnd := endDate.AddDate(0, -1, 0)
 
 	resp := HROverviewResponse{
-		KPIs:        make([]HRKPI, 0),
-		Departments: make([]DepartmentPerformance, 0),
-		Movements:   make([]WorkforceMovement, 0),
-		Trend:       make([]HRTrendPoint, 0),
-		Alerts:      make([]string, 0),
-		LastUpdated: time.Now(),
+		KPIs:             make([]HRKPI, 0),
+		Departments:      make([]DepartmentPerformance, 0),
+		Movements:        make([]WorkforceMovement, 0),
+		Trend:            make([]HRTrendPoint, 0),
+		Alerts:           make([]string, 0),
+		Insights:         make([]string, 0),
+		Recommendations:  make([]map[string]interface{}, 0),
+		ExecutiveSummary: make([]string, 0),
+		LastUpdated:      time.Now(),
 	}
 
 	// Current headcount
@@ -434,10 +448,10 @@ func GetHROverview(c echo.Context) error {
 
 	// Department performance reuse existing analytics query
 	deptAnalytics := []struct {
-		Department string
-		TotalEmployees int
-		PresentCount int
-		AttendanceRate float64
+		Department      string
+		TotalEmployees  int
+		PresentCount    int
+		AttendanceRate  float64
 		PromotionsCount int
 	}{}
 	database.DB.Raw(`
@@ -450,7 +464,7 @@ func GetHROverview(c echo.Context) error {
 		FROM employee_basic_infos ebi
 		LEFT JOIN employee_attendances ea ON ebi.employee_id = ea.employee_id AND ea.date BETWEEN ? AND ?
 		LEFT JOIN yearly_employee_promotions yep ON ebi.employee_id = yep.employee_id AND YEAR(yep.promotion_date) = ?
-		WHERE ebi.status = 1` + departmentFilterClause(department) + `
+		WHERE ebi.status = 1`+departmentFilterClause(department)+`
 		GROUP BY ebi.department
 	`, append([]interface{}{startDate, endDate, year}, departmentFilterParams(department)...)...).Scan(&deptAnalytics)
 
@@ -473,7 +487,7 @@ func GetHROverview(c echo.Context) error {
 	database.DB.Raw(`
 		SELECT type, COUNT(*) as total_count, COALESCE(SUM(amount),0) as total_amount
 		FROM employee_tran_overs eto
-		` + departmentJoinClause(department) + `
+		`+departmentJoinClause(department)+`
 		WHERE eto.date BETWEEN ? AND ?
 		GROUP BY type
 	`, departmentParams(department, startDate, endDate)...).Scan(&movementRows)
@@ -513,8 +527,8 @@ func GetHROverview(c echo.Context) error {
 		database.DB.Raw(`
 			SELECT COALESCE(SUM(amount),0)
 			FROM employee_tran_overs eto
-			`+ departmentJoinClause(department) +`
-			WHERE eto.date BETWEEN ? AND ? AND eto.type = 'overtime'`+ departmentWhereClause(department), departmentParams(department, trendStartDate, trendEndDate)...).Scan(&monthOvertime)
+			`+departmentJoinClause(department)+`
+			WHERE eto.date BETWEEN ? AND ? AND eto.type = 'overtime'`+departmentWhereClause(department), departmentParams(department, trendStartDate, trendEndDate)...).Scan(&monthOvertime)
 
 		resp.Trend = append(resp.Trend, HRTrendPoint{
 			Month:          monthStr,
@@ -571,7 +585,61 @@ func GetHROverview(c echo.Context) error {
 		resp.Alerts = append(resp.Alerts, "AI forecast indicates rising attrition risk")
 	}
 
+	insightPayload := map[string]interface{}{
+		"kpis":        resp.KPIs,
+		"departments": resp.Departments,
+		"movements":   resp.Movements,
+		"trend":       resp.Trend,
+		"alerts":      resp.Alerts,
+	}
+	if resp.Forecast != nil {
+		insightPayload["forecast"] = resp.Forecast
+	}
+
+	var insightResp hrInsightResponse
+	if err := callHRAI("/api/enrich/hr/insights", insightPayload, &insightResp); err == nil {
+		if len(insightResp.ExecutiveSummary) > 0 {
+			resp.ExecutiveSummary = append(resp.ExecutiveSummary, insightResp.ExecutiveSummary...)
+		}
+		if len(insightResp.Insights) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.Insights...)
+		}
+		if len(insightResp.RecommendedActions) > 0 {
+			resp.Recommendations = append(resp.Recommendations, insightResp.RecommendedActions...)
+		}
+	}
+
 	return c.JSON(http.StatusOK, resp)
+}
+
+func callHRAI(endpoint string, payload interface{}, target interface{}) error {
+	aiServiceURL := os.Getenv("AI_SERVICE_URL")
+	if aiServiceURL == "" {
+		aiServiceURL = "http://localhost:8000"
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.Post(aiServiceURL+endpoint, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= http.StatusBadRequest {
+		return fmt.Errorf("ai service returned %s", resp.Status)
+	}
+
+	if target != nil {
+		if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func departmentJoinClause(department string) string {

@@ -146,6 +146,36 @@ class FinanceInsightRequest(BaseModel):
     scenario: Optional[Dict[str, Any]] = None
     alerts: List[str] = []
 
+
+class HRInsightRequest(BaseModel):
+    kpis: List[Dict[str, Any]] = []
+    departments: List[Dict[str, Any]] = []
+    movements: List[Dict[str, Any]] = []
+    trend: List[Dict[str, Any]] = []
+    forecast: Optional[Dict[str, Any]] = None
+    alerts: List[str] = []
+
+
+class SupplyChainInsightRequest(BaseModel):
+    kpis: List[Dict[str, Any]] = []
+    suppliers: List[Dict[str, Any]] = []
+    pending_orders: List[Dict[str, Any]] = []
+    trend: List[Dict[str, Any]] = []
+    forecast: Optional[Dict[str, Any]] = None
+    alerts: List[str] = []
+
+
+class InventoryInsightRequest(BaseModel):
+    kpis: List[Dict[str, Any]] = []
+    categories: List[Dict[str, Any]] = []
+    companies: List[Dict[str, Any]] = []
+    turnover: Optional[Dict[str, Any]] = None
+    trend: List[Dict[str, Any]] = []
+    forecast: Optional[Dict[str, Any]] = None
+    prescriptions: Optional[Dict[str, Any]] = None
+    slow_movers: Optional[List[Any]] = None
+    alerts: List[str] = []
+
 @app.get("/")
 def read_root():
     return {
@@ -364,6 +394,36 @@ async def enrich_production_insights(request: ProductionInsightRequest):
 async def enrich_finance_insights(request: FinanceInsightRequest):
     try:
         summary = prescriptive_service.summarise_finance_overview(request.dict())
+        summary["generated_at"] = datetime.now().isoformat()
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+ 
+ 
+@app.post("/api/enrich/hr/insights")
+async def enrich_hr_insights(request: HRInsightRequest):
+    try:
+        summary = prescriptive_service.summarise_hr_overview(request.dict())
+        summary["generated_at"] = datetime.now().isoformat()
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/enrich/supplychain/insights")
+async def enrich_supplychain_insights(request: SupplyChainInsightRequest):
+    try:
+        summary = prescriptive_service.summarise_supply_chain_overview(request.dict())
+        summary["generated_at"] = datetime.now().isoformat()
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/enrich/inventory/insights")
+async def enrich_inventory_insights(request: InventoryInsightRequest):
+    try:
+        summary = prescriptive_service.summarise_inventory_overview(request.dict())
         summary["generated_at"] = datetime.now().isoformat()
         return summary
     except Exception as e:

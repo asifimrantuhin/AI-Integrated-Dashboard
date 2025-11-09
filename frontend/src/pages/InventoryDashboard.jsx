@@ -21,6 +21,7 @@ import InventoryForecastChart from '../components/AI/InventoryForecastChart'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import ScenarioImpactCard from '../components/Dashboard/ScenarioImpactCard'
 import useDashboardData from '../hooks/useDashboardData'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const InventoryDashboard = () => {
   const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/inventory/overview')
@@ -114,6 +115,16 @@ const InventoryDashboard = () => {
         {data.slow_movers?.length ? (
           <Grid item xs={12} md={6}>
             <RecommendationList title="Slow Movers" items={data.slow_movers} subtitleKey="suggestion" />
+          </Grid>
+        ) : null}
+
+        {(data.executive_summary?.length || data.insights?.length) ? (
+          <Grid item xs={12} md={6}>
+            <InsightListCard
+              title="Inventory Insights"
+              insights={[...(data.executive_summary || []), ...(data.insights || [])]}
+              iconColor="warning"
+            />
           </Grid>
         ) : null}
 

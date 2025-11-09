@@ -18,6 +18,8 @@ import PendingOrdersCard from '../components/SupplyChain/PendingOrdersCard'
 import SupplyAlertsCard from '../components/SupplyChain/SupplyAlertsCard'
 import SupplyForecastChart from '../components/AI/SupplyForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import RecommendationList from '../components/Dashboard/RecommendationList'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const SupplyChainDashboard = () => {
   const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/supplychain/overview')
@@ -109,6 +111,22 @@ const SupplyChainDashboard = () => {
         <Grid item xs={12} md={6}>
           <PendingOrdersCard pendingOrders={data.pending_orders} />
         </Grid>
+
+        {data.recommendations?.length ? (
+          <Grid item xs={12} md={6}>
+            <RecommendationList title="Supply Chain Actions" items={data.recommendations} subtitleKey="impact" />
+          </Grid>
+        ) : null}
+
+        {(data.executive_summary?.length || data.insights?.length) ? (
+          <Grid item xs={12} md={6}>
+            <InsightListCard
+              title="Supply Chain Insights"
+              insights={[...(data.executive_summary || []), ...(data.insights || [])]}
+              iconColor="success"
+            />
+          </Grid>
+        ) : null}
 
         <Grid item xs={12}>
           <SupplyForecastChart

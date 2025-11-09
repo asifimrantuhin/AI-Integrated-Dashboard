@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"idash-backend-api/database"
 	"idash-backend-api/models"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"time"
@@ -405,6 +407,9 @@ type SupplyChainOverviewResponse struct {
 	Trend         []SupplyTrendPoint          `json:"trend"`
 	Forecast      *SupplyForecastSummary      `json:"forecast"`
 	Alerts        []string                    `json:"alerts"`
+	Insights      []string                    `json:"insights"`
+	Recommendations []map[string]interface{}  `json:"recommendations,omitempty"`
+	ExecutiveSummary []string                 `json:"executive_summary,omitempty"`
 	LastUpdated   time.Time                   `json:"last_updated"`
 }
 
@@ -419,6 +424,42 @@ type supplyForecastDetail struct {
 	Forecast   float64 `json:"forecast"`
 	UpperBound float64 `json:"upper_bound"`
 	LowerBound float64 `json:"lower_bound"`
+}
+
+type supplyInsightResponse struct {
+	ExecutiveSummary   []string                 `json:"executive_summary"`
+	Insights           []string                 `json:"insights"`
+	RecommendedActions []map[string]interface{} `json:"recommended_actions"`
+}
+
+func callSupplyChainAI(endpoint string, payload interface{}, target interface{}) error {
+    aiServiceURL := os.Getenv("AI_SERVICE_URL")
+    if aiServiceURL == "" {
+        aiServiceURL = "http://localhost:8000"
+    }
+
+    body, err := json.Marshal(payload)
+    if err != nil {
+        return err
+    }
+
+    resp, err := http.Post(aiServiceURL+endpoint, "application/json", bytes.NewBuffer(body))
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode >= http.StatusBadRequest {
+        return fmt.Errorf("ai service returned %s", resp.Status)
+    }
+
+    if target != nil {
+        if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+            return err
+        }
+    }
+
+    return nil
 }
 
 func GetSupplyChainOverview(c echo.Context) error {
@@ -449,6 +490,9 @@ func GetSupplyChainOverview(c echo.Context) error {
 		PendingOrders: make([]PendingOrderMetric, 0),
 		Trend:         make([]SupplyTrendPoint, 0),
 		Alerts:        make([]string, 0),
+		Insights:      make([]string, 0),
+		Recommendations: make([]map[string]interface{}, 0),
+		ExecutiveSummary: make([]string, 0),
 		LastUpdated:   time.Now(),
 	}
 
@@ -695,6 +739,30 @@ func GetSupplyChainOverview(c echo.Context) error {
 	}
 	if resp.Forecast != nil && current.POValue > 0 && resp.Forecast.TotalForecast > current.POValue*1.1 {
 		resp.Alerts = append(resp.Alerts, "AI forecast indicates 10% increase in upcoming procurement")
+	}
+
+	insightPayload := map[string]interface{}{
+		"kpis":          resp.KPIs,
+		"suppliers":     resp.Suppliers,
+		"pending_orders": resp.PendingOrders,
+		"trend":         resp.Trend,
+		"alerts":        resp.Alerts,
+	}
+	if resp.Forecast != nil {
+		insightPayload["forecast"] = resp.Forecast
+	}
+
+	var insightResp supplyInsightResponse
+	if err := callSupplyChainAI("/api/enrich/supplychain/insights", insightPayload, &insightResp); err == nil {
+		if len(insightResp.ExecutiveSummary) > 0 {
+			resp.ExecutiveSummary = append(resp.ExecutiveSummary, insightResp.ExecutiveSummary...)
+		}
+		if len(insightResp.Insights) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.Insights...)
+		}
+		if len(insightResp.RecommendedActions) > 0 {
+			resp.Recommendations = append(resp.Recommendations, insightResp.RecommendedActions...)
+		}
 	}
 
 	return c.JSON(http.StatusOK, resp)

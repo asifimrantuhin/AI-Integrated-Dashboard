@@ -388,3 +388,236 @@ class PrescriptiveService:
             "insights": insights,
             "recommended_actions": recommendations,
         }
+
+    def summarise_hr_overview(self, payload: Dict) -> Dict:
+        kpis = payload.get("kpis") or []
+        departments = payload.get("departments") or []
+        movements = payload.get("movements") or []
+        trend = payload.get("trend") or []
+        alerts = payload.get("alerts") or []
+
+        executive_summary: List[str] = []
+        insights: List[str] = []
+        recommendations: List[Dict] = []
+
+        def find_kpi(label: str) -> Optional[Dict]:
+            return next((item for item in kpis if (item.get('label') or '').lower() == label.lower()), None)
+
+        headcount_kpi = find_kpi("Headcount")
+        attendance_kpi = find_kpi("Attendance %")
+        attrition_kpi = find_kpi("Attrition %")
+        overtime_kpi = find_kpi("Overtime Hours")
+
+        if headcount_kpi:
+            executive_summary.append(f"Active headcount {headcount_kpi.get('value', 0):,.0f}")
+        if attendance_kpi:
+            executive_summary.append(f"Attendance {attendance_kpi.get('value', 0):.1f}%")
+
+        if attrition_kpi and attrition_kpi.get('value', 0) > 5:
+            insights.append(f"Attrition rate elevated at {attrition_kpi.get('value', 0):.1f}%")
+            recommendations.append({
+                "category": "attrition",
+                "action": "Launch retention interviews & reinforce manager coaching",
+                "impact": "Reduce churn in next quarter",
+            })
+
+        if overtime_kpi and overtime_kpi.get('value', 0) > 400:
+            insights.append(f"Overtime hours high at {overtime_kpi.get('value', 0):,.0f}")
+            recommendations.append({
+                "category": "overtime",
+                "action": "Rebalance rosters or hire interim workforce",
+                "impact": "Protect engagement & fatigue",
+            })
+
+        if departments:
+            weakest = min(departments, key=lambda dep: dep.get('attendance_rate', 0))
+            strongest = max(departments, key=lambda dep: dep.get('attendance_rate', 0))
+            insights.append(
+                f"Lowest attendance in {weakest.get('department')} at {weakest.get('attendance_rate', 0):.1f}%"
+            )
+            insights.append(
+                f"Top engagement in {strongest.get('department')} with {strongest.get('attendance_rate', 0):.1f}% attendance"
+            )
+            if weakest.get('attendance_rate', 0) < 85:
+                recommendations.append({
+                    "category": "engagement",
+                    "department": weakest.get('department'),
+                    "action": "Deploy pulse survey & manager stand-up on attendance blockers",
+                    "impact": "Lift attendance above 90%",
+                })
+
+        if movements:
+            attrition_move = next((m for m in movements if (m.get('type') or '').lower() == 'attrition'), None)
+            if attrition_move and attrition_move.get('total_count', 0) > 0:
+                insights.append(
+                    f"Attrition events {attrition_move.get('total_count')} with cost ৳ {attrition_move.get('total_amount', 0):,.0f}"
+                )
+        if trend:
+            latest = trend[-1]
+            earliest = trend[0]
+            attr_growth = latest.get('attrition_count', 0) - earliest.get('attrition_count', 0)
+            if attr_growth > 0:
+                insights.append(f"Attrition trend rising by {attr_growth:.0f} compared with start of year")
+
+        if not executive_summary and kpis:
+            executive_summary.append("Workforce metrics stable; review insights for focus areas")
+
+        return {
+            "executive_summary": executive_summary,
+            "insights": insights,
+            "recommended_actions": recommendations,
+        }
+
+    def summarise_supply_chain_overview(self, payload: Dict) -> Dict:
+        kpis = payload.get("kpis") or []
+        suppliers = payload.get("suppliers") or []
+        pending_orders = payload.get("pending_orders") or []
+        trend = payload.get("trend") or []
+        alerts = payload.get("alerts") or []
+
+        executive_summary: List[str] = []
+        insights: List[str] = []
+        recommendations: List[Dict] = []
+
+        def metric(name: str) -> Optional[Dict]:
+            return next((k for k in kpis if (k.get('label') or '').lower() == name.lower()), None)
+
+        fulfillment = metric("Fulfillment Rate")
+        pending_po = metric("Pending PO")
+        pending_grn = metric("Pending GRN")
+        lead_time = metric("Avg Lead Time")
+        on_time = metric("On-Time Delivery %")
+
+        if fulfillment:
+            executive_summary.append(f"Fulfilment {fulfillment.get('value', 0):.1f}%")
+            if fulfillment.get('value', 0) < 90:
+                recommendations.append({
+                    "category": "fulfillment",
+                    "action": "Expedite ageing POs and align logistics slots",
+                    "impact": "Lift fulfilment above 95%",
+                })
+
+        if pending_po and pending_po.get('value', 0) > 0:
+            insights.append(f"Pending PO value ৳ {pending_po.get('value', 0):,.0f}")
+        if pending_grn and pending_grn.get('value', 0) > 0:
+            insights.append(f"Pending GRN value ৳ {pending_grn.get('value', 0):,.0f}")
+
+        if lead_time and lead_time.get('value', 0) > 15:
+            recommendations.append({
+                "category": "lead_time",
+                "action": "Renegotiate supplier SLAs / push for QC pre-clearance",
+                "impact": "Reduce average lead time below 12 days",
+            })
+
+        if on_time:
+            executive_summary.append(f"On-time delivery {on_time.get('value', 0):.1f}%")
+            if on_time.get('value', 0) < 85:
+                recommendations.append({
+                    "category": "supplier",
+                    "action": "Escalate to top suppliers with OTIF penalties",
+                    "impact": "Protect service level commitments",
+                })
+
+        if suppliers:
+            top_supplier = suppliers[0]
+            insights.append(
+                f"Best supplier {top_supplier.get('supplier_name')} overall score {top_supplier.get('overall_score', 0):.1f}"
+            )
+            worst = suppliers[-1]
+            insights.append(
+                f"Watch supplier {worst.get('supplier_name')} on-time {worst.get('on_time_percentage', 0):.1f}%"
+            )
+            if worst.get('on_time_percentage', 0) < 75:
+                recommendations.append({
+                    "category": "supplier",
+                    "supplier": worst.get('supplier_name'),
+                    "action": "Trigger supplier recovery plan / dual source",
+                    "impact": "Reduce late deliveries",
+                })
+
+        if pending_orders:
+            longest = max(pending_orders, key=lambda item: item.get('days_pending', 0))
+            insights.append(
+                f"Oldest pending PO {longest.get('po_number')} pending {longest.get('days_pending', 0)} days (৳ {longest.get('pending_amount', 0):,.0f})"
+            )
+            recommendations.append({
+                "category": "pending_po",
+                "po_number": longest.get('po_number'),
+                "action": "Align supplier follow-up & release payment hold",
+                "impact": "Release working capital",
+            })
+
+        if trend:
+            latest = trend[-1]
+            po_value = latest.get('po_value', 0)
+            grn_value = latest.get('grn_value', 0)
+            insights.append(f"Latest month PO ৳ {po_value:,.0f} vs GRN ৳ {grn_value:,.0f}")
+
+        if not executive_summary and kpis:
+            executive_summary.append("Supply chain metrics steady; monitor newly generated actions")
+
+        return {
+            "executive_summary": executive_summary,
+            "insights": insights,
+            "recommended_actions": recommendations,
+        }
+
+    def summarise_inventory_overview(self, payload: Dict) -> Dict:
+        kpis = payload.get("kpis") or []
+        categories = payload.get("categories") or []
+        turnover = payload.get("turnover") or {}
+        trend = payload.get("trend") or []
+        alerts = payload.get("alerts") or []
+
+        executive_summary: List[str] = []
+        insights: List[str] = []
+        recommendations: List[Dict] = []
+
+        inventory_kpi = next((k for k in kpis if (k.get('label') or '').lower() == 'inventory value'), None)
+        if inventory_kpi:
+            executive_summary.append(f"Inventory value ৳ {inventory_kpi.get('value', 0):,.0f}")
+
+        gmroi = turnover.get('GMROI')
+        if gmroi is None:
+            gmroi = turnover.get('gmroi')
+        if gmroi:
+            executive_summary.append(f"GMROI {gmroi:.1f}%")
+            if gmroi < 120:
+                recommendations.append({
+                    "category": "gmroi",
+                    "action": "Adjust pricing or markdown slow movers to lift GMROI",
+                    "impact": "Improve inventory profitability",
+                })
+
+        turnover_days = turnover.get('TurnoverDays') or turnover.get('turnover_days')
+        if turnover_days:
+            insights.append(f"Inventory coverage {turnover_days:.1f} days")
+            if turnover_days > 45:
+                recommendations.append({
+                    "category": "coverage",
+                    "action": "Accelerate liquidation / reorder optimisation",
+                    "impact": "Reduce on-hand to <40 days",
+                })
+
+        if categories:
+            top_category = categories[0]
+            tail_category = categories[-1]
+            insights.append(f"Top category {top_category.get('gl_name')} at ৳ {top_category.get('amount',0):,.0f}")
+            if top_category.get('amount', 0) > max(1, tail_category.get('amount', 0)) * 4:
+                recommendations.append({
+                    "category": "category_mix",
+                    "action": "Rebalance stock mix; redistribute {0}".format(top_category.get('gl_name')),
+                    "impact": "Reduce concentration risk",
+                })
+
+        if trend:
+            latest = trend[-1]
+            insights.append(
+                f"Latest month stock ৳ {latest.get('amount',0):,.0f} vs COGS ৳ {latest.get('cogs',0):,.0f}"
+            )
+
+        return {
+            "executive_summary": executive_summary,
+            "insights": insights,
+            "recommended_actions": recommendations,
+        }

@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
+	"os"
 
 	"idash-backend-api/database"
 	"idash-backend-api/models"
@@ -365,6 +367,9 @@ type InventoryOverviewResponse struct {
 	Alerts      []string                 `json:"alerts"`
 	Prescriptions map[string]interface{} `json:"prescriptions,omitempty"`
 	SlowMovers []interface{}            `json:"slow_movers,omitempty"`
+	Insights    []string                 `json:"insights"`
+	Recommendations []map[string]interface{} `json:"recommendations,omitempty"`
+	ExecutiveSummary []string            `json:"executive_summary,omitempty"`
 	LastUpdated time.Time                `json:"last_updated"`
 }
 
@@ -379,6 +384,12 @@ type inventoryForecastDetail struct {
 	Forecast   float64 `json:"forecast"`
 	UpperBound float64 `json:"upper_bound"`
 	LowerBound float64 `json:"lower_bound"`
+}
+
+type inventoryInsightResponse struct {
+	ExecutiveSummary   []string                 `json:"executive_summary"`
+	Insights           []string                 `json:"insights"`
+	RecommendedActions []map[string]interface{} `json:"recommended_actions"`
 }
 
 func GetInventoryOverview(c echo.Context) error {
@@ -402,6 +413,9 @@ func GetInventoryOverview(c echo.Context) error {
 		Companies:   make([]InventoryCompany, 0),
 		Trend:       make([]InventoryTrendPoint, 0),
 		Alerts:      make([]string, 0),
+		Insights:    make([]string, 0),
+		Recommendations: make([]map[string]interface{}, 0),
+		ExecutiveSummary: make([]string, 0),
 		LastUpdated: time.Now(),
 	}
 
@@ -574,14 +588,90 @@ func GetInventoryOverview(c echo.Context) error {
 		"horizon":    60,
 	}
 	var inventoryAI InventoryPrescriptionResponse
-	if err := callAISummary("/api/prescribe/inventory", inventoryPayload, &inventoryAI); err == nil {
+	if err := callInventoryAI("/api/prescribe/inventory", inventoryPayload, &inventoryAI); err == nil {
 		resp.Prescriptions = inventoryAI.Prescriptions
 		if slow, ok := inventoryAI.Prescriptions["slow_movers"].([]interface{}); ok {
 			resp.SlowMovers = slow
 		}
 	}
 
+	insightPayload := map[string]interface{}{
+		"kpis":        resp.KPIs,
+		"categories":  resp.Categories,
+		"companies":   resp.Companies,
+		"turnover":    resp.Turnover,
+		"trend":       resp.Trend,
+		"alerts":      resp.Alerts,
+	}
+	if resp.Forecast != nil {
+		insightPayload["forecast"] = resp.Forecast
+	}
+	if resp.Prescriptions != nil {
+		insightPayload["prescriptions"] = resp.Prescriptions
+	}
+	if len(resp.SlowMovers) > 0 {
+		insightPayload["slow_movers"] = resp.SlowMovers
+	}
+
+	var insightResp inventoryInsightResponse
+	if err := callInventoryAI("/api/enrich/inventory/insights", insightPayload, &insightResp); err == nil {
+		if len(insightResp.ExecutiveSummary) > 0 {
+			resp.ExecutiveSummary = append(resp.ExecutiveSummary, insightResp.ExecutiveSummary...)
+		}
+		if len(insightResp.Insights) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.Insights...)
+		}
+		if len(insightResp.RecommendedActions) > 0 {
+			resp.Recommendations = append(resp.Recommendations, insightResp.RecommendedActions...)
+			if resp.Prescriptions == nil {
+				resp.Prescriptions = map[string]interface{}{}
+			}
+			if existing, ok := resp.Prescriptions["inventory_actions"].([]interface{}); ok {
+				for _, item := range insightResp.RecommendedActions {
+					existing = append(existing, item)
+				}
+				resp.Prescriptions["inventory_actions"] = existing
+			} else {
+				items := make([]interface{}, 0, len(insightResp.RecommendedActions))
+				for _, item := range insightResp.RecommendedActions {
+					items = append(items, item)
+				}
+				resp.Prescriptions["inventory_actions"] = items
+			}
+		}
+	}
+
 	return c.JSON(http.StatusOK, resp)
+}
+
+func callInventoryAI(endpoint string, payload interface{}, target interface{}) error {
+    aiServiceURL := os.Getenv("AI_SERVICE_URL")
+    if aiServiceURL == "" {
+        aiServiceURL = "http://localhost:8000"
+    }
+
+    body, err := json.Marshal(payload)
+    if err != nil {
+        return err
+    }
+
+    resp, err := http.Post(aiServiceURL+endpoint, "application/json", bytes.NewBuffer(body))
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode >= http.StatusBadRequest {
+        return fmt.Errorf("ai service returned %s", resp.Status)
+    }
+
+    if target != nil {
+        if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+            return err
+        }
+    }
+
+    return nil
 }
 
 func withCompanyClause(companyID string) string {

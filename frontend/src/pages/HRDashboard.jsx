@@ -18,6 +18,8 @@ import WorkforceMovementCard from '../components/HR/WorkforceMovementCard'
 import HRAlertsCard from '../components/HR/HRAlertsCard'
 import HRAttritionForecastChart from '../components/AI/HRAttritionForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import RecommendationList from '../components/Dashboard/RecommendationList'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const HRDashboard = () => {
   const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/hr/overview')
@@ -109,6 +111,21 @@ const HRDashboard = () => {
         <Grid item xs={12} md={6}>
           <WorkforceMovementCard movements={data.movements} />
         </Grid>
+
+        {data.recommendations?.length ? (
+          <Grid item xs={12} md={6}>
+            <RecommendationList title="People Actions" items={data.recommendations} subtitleKey="rationale" />
+          </Grid>
+        ) : null}
+        {(data.executive_summary?.length || data.insights?.length) ? (
+          <Grid item xs={12} md={6}>
+            <InsightListCard
+              title="HR Insights"
+              insights={[...(data.executive_summary || []), ...(data.insights || [])]}
+              iconColor="info"
+            />
+          </Grid>
+        ) : null}
 
         <Grid item xs={12}>
           <HRAttritionForecastChart
