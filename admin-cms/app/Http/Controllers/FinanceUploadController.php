@@ -30,7 +30,7 @@ class FinanceUploadController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-            'data_type' => 'required|in:bank_loan,bank_loan_status,budget,expense,financial_statement',
+            'data_type' => 'required|in:bank_loan,bank_loan_status,budget,expense,financial_statement,budget_summary,expense_summary',
         ]);
 
         try {

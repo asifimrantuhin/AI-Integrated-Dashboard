@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -250,6 +252,36 @@ func GetProductionTrends(c echo.Context) error {
 	return c.JSON(http.StatusOK, trends)
 }
 
+func callProductionAI(endpoint string, payload interface{}, target interface{}) error {
+    aiServiceURL := os.Getenv("AI_SERVICE_URL")
+    if aiServiceURL == "" {
+        aiServiceURL = "http://localhost:8000"
+    }
+
+    body, err := json.Marshal(payload)
+    if err != nil {
+        return err
+    }
+
+    resp, err := http.Post(aiServiceURL+endpoint, "application/json", bytes.NewBuffer(body))
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode >= 400 {
+        return fmt.Errorf("ai service returned %s", resp.Status)
+    }
+
+    if target != nil {
+        if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
+            return err
+        }
+    }
+
+    return nil
+}
+
 type ProductionKPI struct {
 	Label  string  `json:"label"`
 	Value  float64 `json:"value"`
@@ -312,6 +344,8 @@ type ProductionOverviewResponse struct {
 	Trend       []ProductionTrendPoint     `json:"trend"`
 	Forecast    *ProductionForecastSummary `json:"forecast"`
 	Alerts      []string                   `json:"alerts"`
+	Insights    []string                   `json:"insights"`
+	Recommendations []map[string]interface{} `json:"recommendations,omitempty"`
 	LastUpdated time.Time                  `json:"last_updated"`
 }
 
@@ -384,6 +418,8 @@ func GetProductionOverview(c echo.Context) error {
 		Maintenance: make([]MaintenanceMetric, 0),
 		Trend:       make([]ProductionTrendPoint, 0),
 		Alerts:      make([]string, 0),
+		Insights:    make([]string, 0),
+		Recommendations: make([]map[string]interface{}, 0),
 		LastUpdated: time.Now(),
 	}
 
@@ -603,5 +639,35 @@ func GetProductionOverview(c echo.Context) error {
 		resp.Alerts = append(resp.Alerts, fmt.Sprintf("Factory %s wastage rate %.1f%% exceeds target", resp.Wastage[0].Factory, resp.Wastage[0].Rate))
 	}
 
+	insightPayload := map[string]interface{}{
+		"kpis":        resp.KPIs,
+		"lines":       resp.Lines,
+		"wastage":     resp.Wastage,
+		"maintenance": resp.Maintenance,
+		"trend":       resp.Trend,
+	}
+	if resp.Forecast != nil {
+		insightPayload["forecast"] = resp.Forecast
+	}
+
+	var insightResp productionInsightResponse
+	if err := callProductionAI("/api/enrich/production/insights", insightPayload, &insightResp); err == nil {
+		if len(insightResp.ExecutiveSummary) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.ExecutiveSummary...)
+		}
+		if len(insightResp.Insights) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.Insights...)
+		}
+		if len(insightResp.RecommendedActions) > 0 {
+			resp.Recommendations = append(resp.Recommendations, insightResp.RecommendedActions...)
+		}
+	}
+
 	return c.JSON(http.StatusOK, resp)
+}
+
+type productionInsightResponse struct {
+    ExecutiveSummary []string                 `json:"executive_summary"`
+    Insights          []string                 `json:"insights"`
+    RecommendedActions []map[string]interface{} `json:"recommended_actions"`
 }

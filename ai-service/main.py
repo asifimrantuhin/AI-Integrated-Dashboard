@@ -77,6 +77,75 @@ class AnalysisRequest(BaseModel):
     end_date: str
     analysis_type: str  # trend, anomaly, correlation
 
+class SalesPipelineStagePayload(BaseModel):
+    status: str
+    orders: int = 0
+    value: float = 0
+    delivered_value: float = 0
+    pending_value: float = 0
+    avg_discount: float = 0
+    avg_margin: float = 0
+    avg_age_days: float = 0
+
+class SalesPipelineSnapshotPayload(BaseModel):
+    total_orders: int = 0
+    total_value: float = 0
+    delivered_value: float = 0
+    pending_value: float = 0
+    conversion_rate: float = 0
+    stages: List[SalesPipelineStagePayload] = []
+
+class SalesTargetPayload(BaseModel):
+    channel_id: int
+    channel_name: str
+    revenue_target: float = 0
+    actual_revenue: float = 0
+    achievement: float = 0
+    revenue_gap: float = 0
+    promotion_budget: float = 0
+    gross_margin_target: float = 0
+    volume_target: float = 0
+    new_customer_target: float = 0
+    owner: Optional[str] = None
+
+class SalesPromotionPayload(BaseModel):
+    campaign_code: str
+    campaign_name: str
+    channel_name: Optional[str] = None
+    spend_amount: float = 0
+    revenue_uplift: float = 0
+    uplift_percentage: float = 0
+    roi: float = 0
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    audience_tags: Optional[List[str]] = []
+
+class SalesInsightRequest(BaseModel):
+    targets: List[SalesTargetPayload] = []
+    pipeline: SalesPipelineSnapshotPayload
+    promotions: List[SalesPromotionPayload] = []
+
+
+class ProductionInsightRequest(BaseModel):
+    kpis: List[Dict[str, Any]] = []
+    lines: List[Dict[str, Any]] = []
+    wastage: List[Dict[str, Any]] = []
+    maintenance: List[Dict[str, Any]] = []
+    trend: List[Dict[str, Any]] = []
+    forecast: Optional[Dict[str, Any]] = None
+
+
+class FinanceInsightRequest(BaseModel):
+    kpis: List[Dict[str, Any]] = []
+    departments: List[Dict[str, Any]] = []
+    categories: List[Dict[str, Any]] = []
+    loans: List[Dict[str, Any]] = []
+    trend: List[Dict[str, Any]] = []
+    forecast: Optional[Dict[str, Any]] = None
+    prescriptions: Optional[Dict[str, Any]] = None
+    scenario: Optional[Dict[str, Any]] = None
+    alerts: List[str] = []
+
 @app.get("/")
 def read_root():
     return {
@@ -259,6 +328,47 @@ async def predict_sales_summary(request: PredictRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/enrich/sales/insights")
+async def enrich_sales_insights(request: SalesInsightRequest):
+    try:
+        pipeline_summary = prescriptive_service.summarise_pipeline(request.pipeline.dict())
+        targets_summary = prescriptive_service.assess_targets([target.dict() for target in request.targets])
+        promotions_summary = prescriptive_service.analyse_promotions([promo.dict() for promo in request.promotions])
+        executive_summary = prescriptive_service.compile_sales_executive_summary(pipeline_summary, targets_summary, promotions_summary)
+        recommended_actions = prescriptive_service.propose_sales_actions(pipeline_summary, targets_summary, promotions_summary)
+        return {
+            "pipeline": pipeline_summary,
+            "targets": targets_summary,
+            "promotions": promotions_summary,
+            "executive_summary": executive_summary,
+            "recommended_actions": recommended_actions,
+            "generated_at": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+ 
+ 
+@app.post("/api/enrich/production/insights")
+async def enrich_production_insights(request: ProductionInsightRequest):
+    try:
+        summary = prescriptive_service.summarise_production_overview(request.dict())
+        summary["generated_at"] = datetime.now().isoformat()
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/enrich/finance/insights")
+async def enrich_finance_insights(request: FinanceInsightRequest):
+    try:
+        summary = prescriptive_service.summarise_finance_overview(request.dict())
+        summary["generated_at"] = datetime.now().isoformat()
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/api/prescribe/inventory")
 async def prescribe_inventory(request: PrescriptiveRequest):

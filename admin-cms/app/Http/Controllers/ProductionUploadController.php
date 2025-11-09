@@ -30,7 +30,7 @@ class ProductionUploadController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-            'data_type' => 'required|in:production_analysis,wastage_data,cost_analysis',
+            'data_type' => 'required|in:production_analysis,wastage_data,cost_analysis,line_efficiency,maintenance_events',
         ]);
 
         try {

@@ -19,6 +19,8 @@ import MaintenanceIssuesCard from '../components/Production/MaintenanceIssuesCar
 import ProductionAlertsCard from '../components/Production/ProductionAlertsCard'
 import ProductionForecastChart from '../components/AI/ProductionForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import RecommendationList from '../components/Dashboard/RecommendationList'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const ProductionDashboard = () => {
   const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/production/overview')
@@ -104,6 +106,18 @@ const ProductionDashboard = () => {
         <Grid item xs={12} md={6}>
           <WastageCostCard wastage={data.wastage} />
         </Grid>
+
+        {data.recommendations?.length ? (
+          <Grid item xs={12} md={6}>
+            <RecommendationList title="AI Recommended Actions" items={data.recommendations} />
+          </Grid>
+        ) : null}
+
+        {data.insights?.length ? (
+          <Grid item xs={12} md={6}>
+            <InsightListCard title="Operations Insights" insights={data.insights} />
+          </Grid>
+        ) : null}
 
         <Grid item xs={12} md={6}>
           <MaintenanceIssuesCard maintenance={data.maintenance} />

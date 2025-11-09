@@ -402,6 +402,9 @@ type FinanceOverviewResponse struct {
 	Alerts      []string                 `json:"alerts"`
 	Prescriptions map[string]interface{} `json:"prescriptions,omitempty"`
 	Scenario    map[string]interface{}   `json:"scenario,omitempty"`
+	Insights    []string                 `json:"insights"`
+	Recommendations []map[string]interface{} `json:"recommendations,omitempty"`
+	ExecutiveSummary []string            `json:"executive_summary,omitempty"`
 	LastUpdated time.Time                `json:"last_updated"`
 }
 
@@ -415,6 +418,12 @@ type financeForecastDetail struct {
 	Forecast   float64 `json:"forecast"`
 	UpperBound float64 `json:"upper_bound"`
 	LowerBound float64 `json:"lower_bound"`
+}
+
+type financeInsightResponse struct {
+	ExecutiveSummary   []string                 `json:"executive_summary"`
+	Insights           []string                 `json:"insights"`
+	RecommendedActions []map[string]interface{} `json:"recommended_actions"`
 }
 
 func GetFinanceOverview(c echo.Context) error {
@@ -438,6 +447,9 @@ func GetFinanceOverview(c echo.Context) error {
 		Loans:       make([]LoanExposure, 0),
 		Trend:       make([]FinanceTrendPoint, 0),
 		Alerts:      make([]string, 0),
+		Insights:    make([]string, 0),
+		Recommendations: make([]map[string]interface{}, 0),
+		ExecutiveSummary: make([]string, 0),
 		LastUpdated: time.Now(),
 	}
 
@@ -651,6 +663,37 @@ func GetFinanceOverview(c echo.Context) error {
 			"projected_margin":   scenarioResp.ProjectedMargin,
 			"incremental_profit": scenarioResp.IncrementalProfit,
 			"narrative":          scenarioResp.Narrative,
+		}
+	}
+
+	insightPayload := map[string]interface{}{
+		"kpis":        resp.KPIs,
+		"departments": resp.Departments,
+		"categories":  resp.Categories,
+		"loans":       resp.Loans,
+		"trend":       resp.Trend,
+		"alerts":      resp.Alerts,
+	}
+	if resp.Forecast != nil {
+		insightPayload["forecast"] = resp.Forecast
+	}
+	if resp.Prescriptions != nil {
+		insightPayload["prescriptions"] = resp.Prescriptions
+	}
+	if resp.Scenario != nil {
+		insightPayload["scenario"] = resp.Scenario
+	}
+
+	var insightResp financeInsightResponse
+	if err := callFinanceAI("/api/enrich/finance/insights", insightPayload, &insightResp); err == nil {
+		if len(insightResp.ExecutiveSummary) > 0 {
+			resp.ExecutiveSummary = append(resp.ExecutiveSummary, insightResp.ExecutiveSummary...)
+		}
+		if len(insightResp.Insights) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.Insights...)
+		}
+		if len(insightResp.RecommendedActions) > 0 {
+			resp.Recommendations = append(resp.Recommendations, insightResp.RecommendedActions...)
 		}
 	}
 

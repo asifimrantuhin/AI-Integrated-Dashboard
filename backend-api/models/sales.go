@@ -113,6 +113,71 @@ func (TopRetailer) TableName() string {
 	return "top_retailers"
 }
 
+// SalesChannelTarget model
+type SalesChannelTarget struct {
+	ID                uint       `gorm:"primaryKey" json:"id"`
+	DataMonth         time.Time  `gorm:"type:date" json:"data_month"`
+	ChannelID         *uint      `json:"channel_id"`
+	ChannelName       string     `json:"channel_name"`
+	RevenueTarget     float64    `json:"revenue_target"`
+	VolumeTarget      float64    `json:"volume_target"`
+	PromotionBudget   float64    `json:"promotion_budget"`
+	GrossMarginTarget float64    `json:"gross_margin_target"`
+	NewCustomerTarget float64    `json:"new_customer_target"`
+	Owner             string     `json:"owner"`
+	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
+}
+
+func (SalesChannelTarget) TableName() string {
+	return "sales_channel_targets"
+}
+
+// SalesOrderBook model
+type SalesOrderBook struct {
+	ID             uint       `gorm:"primaryKey" json:"id"`
+	OrderNumber    string     `json:"order_number"`
+	OrderDate      time.Time  `json:"order_date"`
+	ChannelID      *uint      `json:"channel_id"`
+	ChannelName    string     `json:"channel_name"`
+	CustomerCode   string     `json:"customer_code"`
+	CustomerName   string     `json:"customer_name"`
+	Region         string     `json:"region"`
+	Status         string     `json:"status"`
+	OrderAmount    float64    `json:"order_amount"`
+	DiscountAmount float64    `json:"discount_amount"`
+	GrossMargin    float64    `json:"gross_margin"`
+	FulfilledAt    *time.Time `json:"fulfilled_at"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
+}
+
+func (SalesOrderBook) TableName() string {
+	return "sales_order_book"
+}
+
+// SalesPromotionPerformance model
+type SalesPromotionPerformance struct {
+	ID               uint       `gorm:"primaryKey" json:"id"`
+	CampaignCode     string     `json:"campaign_code"`
+	CampaignName     string     `json:"campaign_name"`
+	ChannelID        *uint      `json:"channel_id"`
+	ChannelName      string     `json:"channel_name"`
+	StartDate        *time.Time `json:"start_date"`
+	EndDate          *time.Time `json:"end_date"`
+	SpendAmount      float64    `json:"spend_amount"`
+	RevenueUplift    float64    `json:"revenue_uplift"`
+	UpliftPercentage float64    `json:"uplift_percentage"`
+	ROI              float64    `json:"roi"`
+	AudienceTags     string     `json:"audience_tags"`
+	CreatedAt        time.Time  `json:"created_at"`
+	UpdatedAt        time.Time  `json:"updated_at"`
+}
+
+func (SalesPromotionPerformance) TableName() string {
+	return "sales_promotion_performance"
+}
+
 // Channel model
 type Channel struct {
 	ID        uint      `gorm:"primaryKey" json:"id"`

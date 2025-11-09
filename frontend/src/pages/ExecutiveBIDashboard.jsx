@@ -15,10 +15,13 @@ import KPIWidget from '../components/Dashboard/KPIWidget'
 import DepartmentScoreTable from '../components/ExecutiveBI/DepartmentScoreTable'
 import BIForecastGrid from '../components/ExecutiveBI/BIForecastGrid'
 import BIAlertsCard from '../components/ExecutiveBI/BIAlertsCard'
-import BIInsightsPanel from '../components/ExecutiveBI/BIInsightsPanel'
 import BIAssistant from '../components/ExecutiveBI/BIAssistant'
 import SupplyTrendChart from '../components/SupplyChain/SupplyTrendChart'
 import useDashboardData from '../hooks/useDashboardData'
+import PipelineSnapshotCard from '../components/Dashboard/PipelineSnapshotCard'
+import TargetVarianceCard from '../components/Dashboard/TargetVarianceCard'
+import PromotionImpactCard from '../components/Dashboard/PromotionImpactCard'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const ExecutiveBIDashboard = () => {
   const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/bi/overview')
@@ -95,11 +98,35 @@ const ExecutiveBIDashboard = () => {
           </Grid>
         )}
         <Grid item xs={12} md={4}>
-          <BIAlertsCard alerts={data.alerts} />
-          <Box mt={2}>
-            <BIInsightsPanel insights={data.ai_insights} />
-          </Box>
+          <Stack spacing={2}>
+            <BIAlertsCard alerts={data.alerts} />
+            <InsightListCard
+              title="Executive Summary"
+              insights={data.executive_summary}
+              emptyMessage="Summary arrives once AI reviews new data."
+              dense
+            />
+            <InsightListCard title="AI Insights" insights={data.ai_insights} iconColor="warning" dense />
+          </Stack>
         </Grid>
+
+        {data.pipeline ? (
+          <Grid item xs={12} lg={4}>
+            <PipelineSnapshotCard pipeline={data.pipeline} title="Sales Pipeline" dense />
+          </Grid>
+        ) : null}
+
+        {data.sales_targets?.length ? (
+          <Grid item xs={12} lg={4}>
+            <TargetVarianceCard targets={data.sales_targets} title="Channel Target Gaps" maxRows={4} />
+          </Grid>
+        ) : null}
+
+        {data.promotions?.length ? (
+          <Grid item xs={12} lg={4}>
+            <PromotionImpactCard promotions={data.promotions} title="Top Promotions" maxItems={4} />
+          </Grid>
+        ) : null}
 
         <Grid item xs={12} md={6}>
           <DepartmentScoreTable departments={data.departments} />

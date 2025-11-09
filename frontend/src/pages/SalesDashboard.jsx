@@ -21,6 +21,10 @@ import useDashboardData from '../hooks/useDashboardData'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import ScenarioImpactCard from '../components/Dashboard/ScenarioImpactCard'
 import AnomalyAlertList from '../components/Dashboard/AnomalyAlertList'
+import PipelineSnapshotCard from '../components/Dashboard/PipelineSnapshotCard'
+import TargetVarianceCard from '../components/Dashboard/TargetVarianceCard'
+import PromotionImpactCard from '../components/Dashboard/PromotionImpactCard'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const SalesDashboard = () => {
   const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/sales/overview')
@@ -102,14 +106,26 @@ const SalesDashboard = () => {
           <SalesAlertsCard alerts={data.alerts} forecast={data.forecast} />
         </Grid>
 
-        {data.predictions?.length ? (
+        {data.recommendations?.length ? (
           <Grid item xs={12} md={6}>
-            <RecommendationList title="Channel Recommendations" items={data.recommendations || []} />
+            <RecommendationList title="AI Recommended Actions" items={data.recommendations} />
           </Grid>
         ) : null}
         {data.anomalies?.anomalies?.length ? (
           <Grid item xs={12} md={6}>
             <AnomalyAlertList anomalies={data.anomalies} />
+          </Grid>
+        ) : null}
+
+        {data.pipeline ? (
+          <Grid item xs={12} lg={6}>
+            <PipelineSnapshotCard pipeline={data.pipeline} title="Sales Pipeline" />
+          </Grid>
+        ) : null}
+
+        {data.targets?.length ? (
+          <Grid item xs={12} lg={6}>
+            <TargetVarianceCard targets={data.targets} title="Channel Target Coverage" />
           </Grid>
         ) : null}
 
@@ -119,6 +135,18 @@ const SalesDashboard = () => {
         <Grid item xs={12} md={6}>
           <ProductPerformanceCard products={data.products} />
         </Grid>
+
+        {data.promotions?.length ? (
+          <Grid item xs={12} md={6}>
+            <PromotionImpactCard promotions={data.promotions} title="Promotion Impact" />
+          </Grid>
+        ) : null}
+
+        {data.insights?.length ? (
+          <Grid item xs={12} md={6}>
+            <InsightListCard title="Narrative Highlights" insights={data.insights} />
+          </Grid>
+        ) : null}
 
         <Grid item xs={12}>
           <SalesForecastChart

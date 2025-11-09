@@ -21,6 +21,8 @@
                             <option value="production_analysis">Production Analysis</option>
                             <option value="wastage_data">Wastage Data</option>
                             <option value="cost_analysis">Cost Analysis</option>
+                            <option value="line_efficiency">Line Efficiency (Output)</option>
+                            <option value="maintenance_events">Maintenance Events</option>
                         </select>
                     </div>
 
@@ -57,6 +59,8 @@
                     <li><strong>Production Analysis:</strong> Monthly production analysis data</li>
                     <li><strong>Wastage Data:</strong> Production wastage tracking</li>
                     <li><strong>Cost Analysis:</strong> Production cost analysis</li>
+                    <li><strong>Line Efficiency:</strong> Daily/shift throughput, downtime, OEE per production line</li>
+                    <li><strong>Maintenance Events:</strong> Machine maintenance logs with cost and downtime</li>
                 </ul>
             </div>
         </div>

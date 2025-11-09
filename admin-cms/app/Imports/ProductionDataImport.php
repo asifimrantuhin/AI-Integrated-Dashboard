@@ -57,6 +57,10 @@ class ProductionDataImport implements ToCollection, WithHeadingRow
                 return $this->mapWastageData($row);
             case 'cost_analysis':
                 return $this->mapCostAnalysis($row);
+            case 'line_efficiency':
+                return $this->mapLineEfficiency($row);
+            case 'maintenance_events':
+                return $this->mapMaintenanceEvent($row);
             default:
                 return null;
         }
@@ -95,6 +99,33 @@ class ProductionDataImport implements ToCollection, WithHeadingRow
         ];
     }
 
+    private function mapLineEfficiency(array $row): ?array
+    {
+        return [
+            'production_date' => $row['production_date'] ?? $row['date'] ?? null,
+            'factory_id' => $row['factory_id'] ?? $row['factory'] ?? null,
+            'production_line_id' => $row['production_line_id'] ?? $row['line_id'] ?? null,
+            'actual_output' => $row['actual_output'] ?? $row['actual'] ?? 0,
+            'planned_output' => $row['planned_output'] ?? $row['planned'] ?? 0,
+            'efficiency_percentage' => $row['efficiency_percentage'] ?? $row['efficiency'] ?? 0,
+            'downtime_minutes' => $row['downtime_minutes'] ?? $row['downtime'] ?? 0,
+            'oee' => $row['oee'] ?? $row['oee_percentage'] ?? 0,
+        ];
+    }
+
+    private function mapMaintenanceEvent(array $row): ?array
+    {
+        return [
+            'maintenance_date' => $row['maintenance_date'] ?? $row['date'] ?? null,
+            'factory_id' => $row['factory_id'] ?? $row['factory'] ?? null,
+            'machine_code' => $row['machine_code'] ?? null,
+            'machine_name' => $row['machine_name'] ?? null,
+            'downtime_minutes' => $row['downtime_minutes'] ?? $row['downtime'] ?? 0,
+            'cost' => $row['cost'] ?? 0,
+            'description' => $row['description'] ?? $row['remarks'] ?? null,
+        ];
+    }
+
     private function insertData(array $data): void
     {
         try {
@@ -107,6 +138,12 @@ class ProductionDataImport implements ToCollection, WithHeadingRow
                     break;
                 case 'cost_analysis':
                     DB::table('cost_analyses')->insert($data);
+                    break;
+                case 'line_efficiency':
+                    DB::table('production_efficiency')->insert($data);
+                    break;
+                case 'maintenance_events':
+                    DB::table('machine_maintenances')->insert($data);
                     break;
             }
         } catch (\Exception $e) {

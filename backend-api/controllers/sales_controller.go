@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"idash-backend-api/database"
@@ -455,6 +456,9 @@ type ForecastPoint struct {
 }
 
 type SalesForecastSummary struct {
+	ForecastType        string          `json:"forecast_type,omitempty"`
+	EntityID            string          `json:"entity_id,omitempty"`
+	ForecastPeriodDays  int             `json:"forecast_period_days,omitempty"`
 	TotalForecast        float64         `json:"total_forecast"`
 	AverageDailyForecast float64         `json:"average_daily_forecast"`
 	ConfidenceLevel      float64         `json:"confidence_level"`
@@ -474,6 +478,10 @@ type SalesOverviewResponse struct {
 	Anomalies       map[string]interface{}   `json:"anomalies,omitempty"`
 	Scenario        map[string]interface{}   `json:"scenario,omitempty"`
 	LastUpdated     time.Time             `json:"last_updated"`
+	Insights        []string              `json:"insights"`
+	Targets         []SalesTargetVariance `json:"targets"`
+	Promotions      []SalesPromotionInsight `json:"promotions"`
+	Pipeline        SalesPipelineSnapshot `json:"pipeline"`
 }
 
 type forecastDetail struct {
@@ -481,6 +489,77 @@ type forecastDetail struct {
 	Forecast   float64 `json:"forecast"`
 	UpperBound float64 `json:"upper_bound"`
 	LowerBound float64 `json:"lower_bound"`
+}
+
+type SalesTargetVariance struct {
+	ChannelID         int     `json:"channel_id"`
+	ChannelName       string  `json:"channel_name"`
+	RevenueTarget     float64 `json:"revenue_target"`
+	ActualRevenue     float64 `json:"actual_revenue"`
+	Achievement       float64 `json:"achievement"`
+	RevenueGap        float64 `json:"revenue_gap"`
+	PromotionBudget   float64 `json:"promotion_budget"`
+	GrossMarginTarget float64 `json:"gross_margin_target"`
+	VolumeTarget      float64 `json:"volume_target"`
+	NewCustomerTarget float64 `json:"new_customer_target"`
+	Owner             string  `json:"owner"`
+}
+
+type SalesPipelineStage struct {
+	Status         string  `json:"status"`
+	Orders         int     `json:"orders"`
+	Value          float64 `json:"value"`
+	DeliveredValue float64 `json:"delivered_value"`
+	PendingValue   float64 `json:"pending_value"`
+	AvgDiscount    float64 `json:"avg_discount"`
+	AvgMargin      float64 `json:"avg_margin"`
+	AvgAgeDays     float64 `json:"avg_age_days"`
+}
+
+type SalesPipelineSnapshot struct {
+	TotalOrders     int                  `json:"total_orders"`
+	TotalValue      float64              `json:"total_value"`
+	DeliveredValue  float64              `json:"delivered_value"`
+	PendingValue    float64              `json:"pending_value"`
+	ConversionRate  float64              `json:"conversion_rate"`
+	Stages          []SalesPipelineStage `json:"stages"`
+}
+
+type SalesPromotionInsight struct {
+	CampaignCode     string   `json:"campaign_code"`
+	CampaignName     string   `json:"campaign_name"`
+	ChannelName      string   `json:"channel_name"`
+	SpendAmount      float64  `json:"spend_amount"`
+	RevenueUplift    float64  `json:"revenue_uplift"`
+	UpliftPercentage float64  `json:"uplift_percentage"`
+	ROI              float64  `json:"roi"`
+	StartDate        string   `json:"start_date"`
+	EndDate          string   `json:"end_date"`
+	AudienceTags     []string `json:"audience_tags"`
+}
+
+type salesInsightPipeline struct {
+	Narrative            string                   `json:"narrative"`
+	Alerts               []string                 `json:"alerts"`
+	StageRecommendations []map[string]interface{} `json:"stage_recommendations"`
+}
+
+type salesInsightTargets struct {
+	Alerts []string                 `json:"alerts"`
+	Focus  []map[string]interface{} `json:"focus"`
+}
+
+type salesInsightPromotions struct {
+	Highlights      []string                 `json:"highlights"`
+	Underperformers []map[string]interface{} `json:"underperformers"`
+}
+
+type salesInsightResponse struct {
+	ExecutiveSummary   []string                 `json:"executive_summary"`
+	Pipeline           salesInsightPipeline     `json:"pipeline"`
+	Targets            salesInsightTargets      `json:"targets"`
+	Promotions         salesInsightPromotions   `json:"promotions"`
+	RecommendedActions []map[string]interface{} `json:"recommended_actions"`
 }
 
 func GetSalesOverview(c echo.Context) error {
@@ -507,6 +586,12 @@ func GetSalesOverview(c echo.Context) error {
 		},
 		Trend:       make([]SalesTrendPoint, 0),
 		Alerts:      make([]string, 0),
+		Insights:    make([]string, 0),
+		Targets:     make([]SalesTargetVariance, 0),
+		Promotions:  make([]SalesPromotionInsight, 0),
+		Pipeline: SalesPipelineSnapshot{
+			Stages: make([]SalesPipelineStage, 0),
+		},
 		LastUpdated: time.Now(),
 	}
 
@@ -648,6 +733,224 @@ func GetSalesOverview(c echo.Context) error {
 		})
 	}
 
+	// Channel target coverage
+	type targetRow struct {
+		ChannelID         int
+		ChannelName       string
+		RevenueTarget     float64
+		VolumeTarget      float64
+		PromotionBudget   float64
+		GrossMarginTarget float64
+		NewCustomerTarget float64
+		Owner             string
+		ActualRevenue     float64
+	}
+
+	var targetRows []targetRow
+	database.DB.Raw(`
+		SELECT
+			COALESCE(sct.channel_id, 0) AS channel_id,
+			COALESCE(sct.channel_name, '') AS channel_name,
+			SUM(sct.revenue_target) AS revenue_target,
+			SUM(sct.volume_target) AS volume_target,
+			SUM(sct.promotion_budget) AS promotion_budget,
+			SUM(sct.gross_margin_target) AS gross_margin_target,
+			SUM(sct.new_customer_target) AS new_customer_target,
+			MAX(IFNULL(sct.owner, '')) AS owner,
+			COALESCE(SUM(cmm.billed), 0) AS actual_revenue
+		FROM sales_channel_targets sct
+		LEFT JOIN channelwise_monthly_report cmm
+			ON cmm.channel_id = sct.channel_id
+			AND DATE_FORMAT(cmm.data_month, '%Y-%m') = DATE_FORMAT(sct.data_month, '%Y-%m')
+		WHERE sct.data_month BETWEEN ? AND ?
+		GROUP BY sct.channel_id, sct.channel_name
+		ORDER BY revenue_target DESC
+	`, startDate, endDate).Scan(&targetRows)
+
+	for _, row := range targetRows {
+		achievement := 0.0
+		if row.RevenueTarget > 0 {
+			achievement = (row.ActualRevenue / row.RevenueTarget) * 100
+		}
+		gap := row.RevenueTarget - row.ActualRevenue
+		resp.Targets = append(resp.Targets, SalesTargetVariance{
+			ChannelID:         row.ChannelID,
+			ChannelName:       row.ChannelName,
+			RevenueTarget:     row.RevenueTarget,
+			ActualRevenue:     row.ActualRevenue,
+			Achievement:       achievement,
+			RevenueGap:        gap,
+			PromotionBudget:   row.PromotionBudget,
+			GrossMarginTarget: row.GrossMarginTarget,
+			VolumeTarget:      row.VolumeTarget,
+			NewCustomerTarget: row.NewCustomerTarget,
+			Owner:             row.Owner,
+		})
+		if gap > row.RevenueTarget*0.12 {
+			resp.Alerts = append(resp.Alerts, fmt.Sprintf("%s revenue gap ৳%.2f vs target", row.ChannelName, gap))
+		}
+	}
+
+	// Pipeline snapshot
+	type pipelineRow struct {
+		Status        string
+		Orders        int
+		Value         float64
+		DiscountValue float64
+		MarginValue   float64
+		AvgAgeDays    float64
+		Delivered     float64
+	}
+
+	var pipelineRows []pipelineRow
+	database.DB.Raw(`
+		SELECT status,
+			COUNT(*) AS orders,
+			COALESCE(SUM(order_amount), 0) AS value,
+			COALESCE(SUM(discount_amount), 0) AS discount_value,
+			COALESCE(SUM(gross_margin), 0) AS margin_value,
+			COALESCE(AVG(DATEDIFF(COALESCE(fulfilled_at, NOW()), order_date)), 0) AS avg_age_days,
+			COALESCE(SUM(CASE WHEN status = 'delivered' THEN order_amount ELSE 0 END), 0) AS delivered
+		FROM sales_order_book
+		WHERE order_date BETWEEN ? AND ?
+		GROUP BY status
+	`, startDate, endDate).Scan(&pipelineRows)
+
+	resp.Pipeline.TotalOrders = 0
+	resp.Pipeline.TotalValue = 0
+	resp.Pipeline.DeliveredValue = 0
+	resp.Pipeline.PendingValue = 0
+	resp.Pipeline.Stages = resp.Pipeline.Stages[:0]
+
+	for _, row := range pipelineRows {
+		pendingValue := row.Value
+		if strings.EqualFold(row.Status, "delivered") {
+			pendingValue = row.Value - row.Delivered
+			if pendingValue < 0 {
+				pendingValue = 0
+			}
+		}
+		avgDiscount := 0.0
+		if row.Value > 0 {
+			avgDiscount = (row.DiscountValue / row.Value) * 100
+		}
+		avgMargin := 0.0
+		if row.Value > 0 {
+			avgMargin = (row.MarginValue / row.Value) * 100
+		}
+		resp.Pipeline.TotalOrders += row.Orders
+		resp.Pipeline.TotalValue += row.Value
+		resp.Pipeline.DeliveredValue += row.Delivered
+		resp.Pipeline.PendingValue += pendingValue
+		resp.Pipeline.Stages = append(resp.Pipeline.Stages, SalesPipelineStage{
+			Status:         row.Status,
+			Orders:         row.Orders,
+			Value:          row.Value,
+			DeliveredValue: row.Delivered,
+			PendingValue:   pendingValue,
+			AvgDiscount:    avgDiscount,
+			AvgMargin:      avgMargin,
+			AvgAgeDays:     row.AvgAgeDays,
+		})
+	}
+
+	if resp.Pipeline.TotalValue > 0 {
+		resp.Pipeline.ConversionRate = (resp.Pipeline.DeliveredValue / resp.Pipeline.TotalValue) * 100
+	}
+
+	// Promotion performance insights
+	type promoRow struct {
+		CampaignCode     string
+		CampaignName     string
+		ChannelName      string
+		StartDate        *time.Time
+		EndDate          *time.Time
+		SpendAmount      float64
+		RevenueUplift    float64
+		UpliftPercentage float64
+		ROI              float64
+		AudienceTags     string
+	}
+
+	var promoRows []promoRow
+	database.DB.Raw(`
+		SELECT campaign_code, campaign_name, COALESCE(channel_name, '') AS channel_name,
+			start_date, end_date, spend_amount, revenue_uplift, uplift_percentage, roi, audience_tags
+		FROM sales_promotion_performance
+		WHERE (start_date BETWEEN ? AND ?)
+			OR (end_date BETWEEN ? AND ?)
+			OR (start_date <= ? AND (end_date IS NULL OR end_date >= ?))
+		ORDER BY COALESCE(end_date, start_date, NOW()) DESC
+		LIMIT 10
+	`, startDate, endDate, startDate, endDate, endDate, startDate).Scan(&promoRows)
+
+	for _, row := range promoRows {
+		tags := make([]string, 0)
+		if row.AudienceTags != "" {
+			var jsonTags []string
+			if err := json.Unmarshal([]byte(row.AudienceTags), &jsonTags); err == nil {
+				tags = jsonTags
+			} else {
+				parts := strings.Split(row.AudienceTags, ",")
+				for _, part := range parts {
+					trimmed := strings.TrimSpace(part)
+					if trimmed != "" {
+						tags = append(tags, trimmed)
+					}
+				}
+			}
+		}
+		startStr := ""
+		if row.StartDate != nil {
+			startStr = row.StartDate.Format("2006-01-02")
+		}
+		endStr := ""
+		if row.EndDate != nil {
+			endStr = row.EndDate.Format("2006-01-02")
+		}
+		resp.Promotions = append(resp.Promotions, SalesPromotionInsight{
+			CampaignCode:     row.CampaignCode,
+			CampaignName:     row.CampaignName,
+			ChannelName:      row.ChannelName,
+			SpendAmount:      row.SpendAmount,
+			RevenueUplift:    row.RevenueUplift,
+			UpliftPercentage: row.UpliftPercentage,
+			ROI:              row.ROI,
+			StartDate:        startStr,
+			EndDate:          endStr,
+			AudienceTags:     tags,
+		})
+	}
+
+	// AI insight enrichment for targets, pipeline, and promotions
+	insightPayload := map[string]interface{}{
+		"targets":    resp.Targets,
+		"pipeline":   resp.Pipeline,
+		"promotions": resp.Promotions,
+	}
+	var insightResp salesInsightResponse
+	if err := callAISummary("/api/enrich/sales/insights", insightPayload, &insightResp); err == nil {
+		if len(insightResp.ExecutiveSummary) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.ExecutiveSummary...)
+		}
+		if insightResp.Pipeline.Narrative != "" {
+			resp.Insights = append(resp.Insights, insightResp.Pipeline.Narrative)
+		}
+		if len(insightResp.Pipeline.Alerts) > 0 {
+			resp.Alerts = append(resp.Alerts, insightResp.Pipeline.Alerts...)
+		}
+		if len(insightResp.Targets.Alerts) > 0 {
+			resp.Alerts = append(resp.Alerts, insightResp.Targets.Alerts...)
+		}
+		if len(insightResp.Promotions.Highlights) > 0 {
+			resp.Insights = append(resp.Insights, insightResp.Promotions.Highlights...)
+		}
+		resp.Recommendations = append(resp.Recommendations, insightResp.Pipeline.StageRecommendations...)
+		resp.Recommendations = append(resp.Recommendations, insightResp.Targets.Focus...)
+		resp.Recommendations = append(resp.Recommendations, insightResp.Promotions.Underperformers...)
+		resp.Recommendations = append(resp.Recommendations, insightResp.RecommendedActions...)
+	}
+
 	// Trend data (last 12 months)
 	type trendRow struct {
 		Month  string
@@ -683,13 +986,17 @@ func GetSalesOverview(c echo.Context) error {
 		}
 
 		forecastSummary := &SalesForecastSummary{
-			ForecastType:       forecastModel.ForecastType,
-			EntityID:           forecastModel.EntityID,
-			ForecastPeriodDays: 30,
-			ConfidenceLevel:    forecastModel.ConfidenceLevel,
-			TotalForecast:      forecastModel.ForecastedValue,
-			ModelUsed:          forecastModel.ModelUsed,
-			ForecastData:       make([]ForecastPoint, 0),
+			ForecastType:        forecastModel.ForecastType,
+			EntityID:            forecastModel.EntityID,
+			ForecastPeriodDays:  30,
+			ConfidenceLevel:     forecastModel.ConfidenceLevel,
+			TotalForecast:       forecastModel.ForecastedValue,
+			AverageDailyForecast: 0,
+			ModelUsed:           forecastModel.ModelUsed,
+			ForecastData:        make([]ForecastPoint, 0),
+		}
+		if forecastSummary.ForecastPeriodDays > 0 {
+			forecastSummary.AverageDailyForecast = forecastModel.ForecastedValue / float64(forecastSummary.ForecastPeriodDays)
 		}
 
 		for _, d := range details {
@@ -714,7 +1021,7 @@ func GetSalesOverview(c echo.Context) error {
 	var predictionResp SalesPredictionResponse
 	if err := callAISummary("/api/predict/sales/summary", predictionPayload, &predictionResp); err == nil {
 		resp.Predictions = predictionResp.Predictions
-		resp.Recommendations = predictionResp.Recommendations
+		resp.Recommendations = append(resp.Recommendations, predictionResp.Recommendations...)
 	}
 
 	// Enriched anomaly detection

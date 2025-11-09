@@ -78,6 +78,27 @@ class FinanceDataImport implements ToCollection, WithHeadingRow
                     'month' => $row['month'] ?? null,
                     'amount' => $row['amount'] ?? 0,
                 ];
+            case 'budget_summary':
+                return [
+                    'month' => $row['month'] ?? null,
+                    'category_id' => $row['category_id'] ?? null,
+                    'department_id' => $row['department_id'] ?? null,
+                    'budget_amount' => $row['budget_amount'] ?? $row['budget'] ?? 0,
+                    'actual_amount' => $row['actual_amount'] ?? $row['actual'] ?? 0,
+                ];
+            case 'expense_summary':
+                return [
+                    'month' => $row['month'] ?? null,
+                    'expense_id' => $row['expense_id'] ?? $row['budget_id'] ?? null,
+                    'budget_amount' => $row['budget_amount'] ?? $row['budget'] ?? 0,
+                    'actual_amount' => $row['actual_amount'] ?? $row['actual'] ?? 0,
+                ];
+            case 'financial_statement':
+                return [
+                    'month' => $row['month'] ?? null,
+                    'expense_id' => $row['expense_id'] ?? null,
+                    'amount' => $row['amount'] ?? $row['actual_amount'] ?? 0,
+                ];
             default:
                 return null;
         }
@@ -98,6 +119,15 @@ class FinanceDataImport implements ToCollection, WithHeadingRow
                     break;
                 case 'expense':
                     DB::table('bdgt_expenses')->insert($data);
+                    break;
+                case 'budget_summary':
+                    DB::table('budget_summaries')->insert($data);
+                    break;
+                case 'expense_summary':
+                    DB::table('budget_monthlies')->insert($data);
+                    break;
+                case 'financial_statement':
+                    DB::table('financial_expense_raw_data')->insert($data);
                     break;
             }
         } catch (\Exception $e) {

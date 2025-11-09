@@ -20,6 +20,7 @@ import FinanceAlertsCard from '../components/Finance/FinanceAlertsCard'
 import FinanceForecastChart from '../components/AI/FinanceForecastChart'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import ScenarioImpactCard from '../components/Dashboard/ScenarioImpactCard'
+import InsightListCard from '../components/Dashboard/InsightListCard'
 import useDashboardData from '../hooks/useDashboardData'
 
 const FinanceDashboard = () => {
@@ -106,11 +107,25 @@ const FinanceDashboard = () => {
           <FinanceAlertsCard alerts={data.alerts} forecast={data.forecast} />
         </Grid>
 
-        {data.prescriptions?.financial_actions && (
+        {(data.recommendations?.length || data.prescriptions?.financial_actions) ? (
           <Grid item xs={12} md={6}>
-            <RecommendationList title="Financial Recommendations" items={data.prescriptions.financial_actions} subtitleKey="rationale" />
+            <RecommendationList
+              title="Financial Recommendations"
+              items={[...(data.recommendations || []), ...(data.prescriptions?.financial_actions || [])]}
+              subtitleKey="rationale"
+            />
           </Grid>
-        )}
+        ) : null}
+
+        {data.executive_summary?.length || data.insights?.length ? (
+          <Grid item xs={12} md={6}>
+            <InsightListCard
+              title="Finance Insights"
+              insights={[...(data.executive_summary || []), ...(data.insights || [])]}
+              iconColor="info"
+            />
+          </Grid>
+        ) : null}
 
         <Grid item xs={12} md={6}>
           <DepartmentPerformanceTable departments={data.departments} />
