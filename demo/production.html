@@ -89,81 +89,20 @@
           </article>
         </section>
 
-        <section class="grid-3">
-          <article class="chart-card" style="grid-column: span 2;">
+        <section class="grid-2" style="gap:18px;">
+          <article class="chart-card" style="min-height: 320px;">
             <div>
-              <h3>Production Trend</h3>
-              <p style="color: var(--muted); font-size: 13px;">Units vs capacity vs forecast</p>
+              <h3>Energy Cost Breakdown</h3>
+              <p style="color: var(--muted); font-size: 13px;">Consumption cost by factory (৳ million)</p>
             </div>
-            <canvas id="productionTrendChart"></canvas>
+            <canvas id="energyCostChart"></canvas>
           </article>
-          <article class="card" style="min-height: 360px;">
-            <h3>Live Alerts</h3>
-            <ul class="insight-list">
-              <li class="insight-item"><span class="material-icons-outlined" style="color:#fb7185;">warning</span>Plant 3 Line C overheating risk. Planned shutdown at 21:00.</li>
-              <li class="insight-item"><span class="material-icons-outlined" style="color:#38bdf8;">build_circle</span>Maintenance ticket #4582 resolved. Bearing replaced.</li>
-              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">insights</span>AI suggests shifting 8% load from Plant 1 to Plant 2 for efficiency.
-              </li>
-            </ul>
-          </article>
-        </section>
-
-        <section class="grid-2">
-          <article class="card" style="gap: 18px;">
-            <h3>Production Lines</h3>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Line</th>
-                  <th>Throughput</th>
-                  <th>OEE</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Plant 1 · Line A</td>
-                  <td>312k units</td>
-                  <td>89%</td>
-                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>Stable</span></td>
-                </tr>
-                <tr>
-                  <td>Plant 2 · Line B</td>
-                  <td>428k units</td>
-                  <td>93%</td>
-                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">north_east</span>Scaling</span></td>
-                </tr>
-                <tr>
-                  <td>Plant 3 · Line C</td>
-                  <td>276k units</td>
-                  <td>82%</td>
-                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">error_outline</span>Monitor</span></td>
-                </tr>
-                <tr>
-                  <td>Plant 4 · Line D</td>
-                  <td>188k units</td>
-                  <td>79%</td>
-                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">change_circle</span>Ramp-up</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </article>
-          <article class="card" style="gap: 18px;">
-            <h3>Wastage Cost Hotspots</h3>
-            <div class="list">
-              <div class="list-item">
-                <strong>Injection Molding</strong>
-                ৳ 18M • Resin loss due to nozzle clogging. Scheduled CIP cycle.
-              </div>
-              <div class="list-item">
-                <strong>Packaging Line</strong>
-                ৳ 11M • Carton misprint batch. Supplier credit in progress.
-              </div>
-              <div class="list-item">
-                <strong>Assembly Line</strong>
-                ৳ 6M • Rework due to misaligned sensors. Technician training ongoing.
-              </div>
+          <article class="chart-card" style="min-height: 320px;">
+            <div>
+              <h3>Downtime Composition</h3>
+              <p style="color: var(--muted); font-size: 13px;">Top causes captured from maintenance logs</p>
             </div>
+            <canvas id="downtimeCauseChart"></canvas>
           </article>
         </section>
 
@@ -291,6 +230,88 @@
                 scales: {
                   y: { ticks: { callback: (v) => `${v} ×100k` }, grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false } },
                   x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const energyCtx = document.getElementById('energyCostChart')
+          if (energyCtx) {
+            window.iDashDemo.createChart(energyCtx, {
+              type: 'bar',
+              data: {
+                labels: ['Plant 1', 'Plant 2', 'Plant 3', 'Plant 4'],
+                datasets: [
+                  {
+                    label: 'Electricity',
+                    data: [42, 38, 46, 24],
+                    backgroundColor: '#2563eb',
+                    borderRadius: 6
+                  },
+                  {
+                    label: 'Gas',
+                    data: [18, 22, 26, 12],
+                    backgroundColor: '#22c55e',
+                    borderRadius: 6
+                  },
+                  {
+                    label: 'Water & Others',
+                    data: [6, 5, 7, 3],
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 6
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                  legend: { position: 'bottom' },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => `${ctx.dataset.label}: ৳${ctx.parsed.y}M`
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    stacked: true,
+                    ticks: { callback: (v) => `৳${v}M` },
+                    grid: { color: 'rgba(148,163,184,0.15)', drawBorder: false }
+                  },
+                  x: {
+                    stacked: true,
+                    grid: { display: false }
+                  }
+                }
+              }
+            })
+          }
+
+          const downtimeCtx = document.getElementById('downtimeCauseChart')
+          if (downtimeCtx) {
+            window.iDashDemo.createChart(downtimeCtx, {
+              type: 'doughnut',
+              data: {
+                labels: ['Mechanical', 'Electrical', 'Quality', 'Changeover', 'Planning'],
+                datasets: [
+                  {
+                    data: [34, 22, 18, 14, 12],
+                    backgroundColor: ['#ef4444', '#f97316', '#facc15', '#2563eb', '#22c55e'],
+                    hoverOffset: 8
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => `${ctx.label}: ${ctx.parsed}%`
+                    }
+                  }
                 }
               }
             })

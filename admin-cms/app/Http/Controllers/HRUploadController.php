@@ -2,16 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Models\FileUpload;
 use App\Imports\HRDataImport;
-use Illuminate\Support\Facades\DB;
+use App\Models\FileUpload;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class HRUploadController extends Controller
 {
+    private const CANONICAL_TYPES = [
+        'headcount_snapshot',
+        'attendance_summary',
+        'movement_summary',
+        'promotion_summary',
+    ];
+
+    private const TYPE_ALIASES = [
+        'employee_basic_info' => 'headcount_snapshot',
+        'employee_attendance' => 'attendance_summary',
+        'employee_tran_over' => 'movement_summary',
+        'employee_promotions' => 'promotion_summary',
+    ];
+
     public function index()
     {
         $uploads = FileUpload::where('module', 'hr')
@@ -28,14 +40,17 @@ class HRUploadController extends Controller
 
     public function store(Request $request)
     {
+        $accepted = array_merge(self::CANONICAL_TYPES, array_keys(self::TYPE_ALIASES));
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-            'data_type' => 'required|in:employee_basic_info,employee_attendance,employee_promotions,employee_tran_over',
+            'data_type' => 'required|in:' . implode(',', $accepted),
         ]);
 
         try {
             $file = $request->file('file');
-            $dataType = $request->input('data_type');
+            $selectedType = $request->input('data_type');
+            $dataType = $this->normalizeType($selectedType);
             $path = $file->store('uploads/hr/' . $dataType);
 
             $upload = FileUpload::create([
@@ -53,13 +68,15 @@ class HRUploadController extends Controller
 
             return redirect()->route('admin.upload.hr.index')
                 ->with('success', 'HR data uploaded and processed successfully!');
-        } catch (\Exception $e) {
-            Log::error('HR upload error: ' . $e->getMessage());
-            
+        } catch (\Throwable $e) {
+            Log::error('HR upload error: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+            ]);
+
             if (isset($upload)) {
                 $upload->update([
                     'status' => 'failed',
-                    'error_message' => $e->getMessage()
+                    'error_message' => $e->getMessage(),
                 ]);
             }
 
@@ -73,14 +90,14 @@ class HRUploadController extends Controller
     {
         $upload = FileUpload::findOrFail($id);
         $data = $this->getUploadData($upload);
-        
+
         return view('admin.upload.hr.show', compact('upload', 'data'));
     }
 
     public function downloadSample($dataType)
     {
         $samplePath = storage_path('app/samples/hr/' . $dataType . '_sample.xlsx');
-        
+
         if (file_exists($samplePath)) {
             return response()->download($samplePath);
         }
@@ -103,7 +120,7 @@ class HRUploadController extends Controller
             }
 
             return array_slice($data, 0, 100);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [];
         }
     }
@@ -111,13 +128,19 @@ class HRUploadController extends Controller
     private function parseCsv($filePath)
     {
         $data = [];
-        if (($handle = fopen($filePath, "r")) !== false) {
-            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 $data[] = $row;
             }
             fclose($handle);
         }
+
         return $data;
+    }
+
+    private function normalizeType(string $selected): string
+    {
+        return self::TYPE_ALIASES[$selected] ?? $selected;
     }
 }
 

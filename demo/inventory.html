@@ -89,6 +89,35 @@
           </article>
         </section>
 
+        <section class="grid-2" style="gap:18px;">
+          <article class="card" style="gap:16px;">
+            <h3>AI Executive Summary</h3>
+            <p style="color: var(--muted); font-size: 13px;">Inventory enrichment service highlights cash compression and service risk hotspots.</p>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#2563eb;">insights</span>Inventory turns recovered to 7.4× after clearing aged electronics worth ৳ 210M.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#22c55e;">local_shipping</span>D2C fulfilment buffer holds 17 days cover—AI recommends incremental transfer for east region.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#f97316;">warning</span>Carrying cost will spike by ৳ 24M if slow movers remain above 60 days through next cycle.</li>
+            </ul>
+          </article>
+          <article class="card" style="gap:16px;">
+            <h3>Risk Radar</h3>
+            <div class="list">
+              <div class="list-item" style="background: rgba(220,38,38,0.12);">
+                <strong>Plant 3 Freezers</strong>
+                Stockout probability 42% within 10 days · expedite PO-77214.
+              </div>
+              <div class="list-item">
+                <strong>Omni-channel Bundles</strong>
+                Allocate 1.5× replenishment to keep fill rate above 96% for Black Friday.
+              </div>
+              <div class="list-item">
+                <strong>Warehouse Delta</strong>
+                Space utilisation 87% · plan cross-dock to avoid overflow fees.
+              </div>
+            </div>
+          </article>
+        </section>
+
         <section class="grid-3">
           <article class="chart-card" style="grid-column: span 2;">
             <div>
@@ -198,25 +227,48 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>DC North</td>
-                  <td>36 days</td>
-                  <td>82%</td>
-                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">task_alt</span>Balanced</span></td>
-                </tr>
-                <tr>
-                  <td>DC South</td>
+                  <td>Central DC</td>
                   <td>44 days</td>
-                  <td>91%</td>
-                  <td><span class="status-pill warning"><span class="material-icons-outlined" style="font-size:16px;">change_circle</span>Reallocate</span></td>
+                  <td>82%</td>
+                  <td><span class="chip">Stable</span></td>
                 </tr>
                 <tr>
-                  <td>Plant 2</td>
-                  <td>39 days</td>
+                  <td>North Hub</td>
+                  <td>38 days</td>
                   <td>76%</td>
-                  <td><span class="status-pill"><span class="material-icons-outlined" style="font-size:16px;">north_east</span>Improving</span></td>
+                  <td><span class="chip" style="background: rgba(59,130,246,0.14); color:#1d4ed8;">Monitor</span></td>
+                </tr>
+                <tr>
+                  <td>South Hub</td>
+                  <td>47 days</td>
+                  <td>88%</td>
+                  <td><span class="chip" style="background: rgba(234,179,8,0.14); color:#b45309;">Tight</span></td>
+                </tr>
+                <tr>
+                  <td>East Hub</td>
+                  <td>39 days</td>
+                  <td>79%</td>
+                  <td><span class="chip">Stable</span></td>
                 </tr>
               </tbody>
             </table>
+          </article>
+        </section>
+
+        <section class="grid-2" style="gap:18px;">
+          <article class="chart-card" style="min-height: 320px;">
+            <div>
+              <h3>Stock Aging Distribution</h3>
+              <p style="color: var(--muted); font-size: 13px;">Inventory value by aging bucket (৳ million)</p>
+            </div>
+            <canvas id="stockAgingChart"></canvas>
+          </article>
+          <article class="chart-card" style="min-height: 320px;">
+            <div>
+              <h3>Company Turnover Benchmark</h3>
+              <p style="color: var(--muted); font-size: 13px;">Turns vs coverage across business units</p>
+            </div>
+            <canvas id="turnoverBenchmarkChart"></canvas>
           </article>
         </section>
 
@@ -375,6 +427,94 @@
                     grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false }
                   },
                   x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const agingCtx = document.getElementById('stockAgingChart')
+          if (agingCtx) {
+            window.iDashDemo.createChart(agingCtx, {
+              type: 'bar',
+              data: {
+                labels: ['0-15 days', '16-30 days', '31-45 days', '46-60 days', '60+ days'],
+                datasets: [
+                  {
+                    label: 'Inventory Value',
+                    data: [1820, 1620, 1280, 620, 420],
+                    backgroundColor: ['#22c55e', '#0ea5e9', '#f59e0b', '#f97316', '#ef4444'],
+                    borderRadius: 8
+                  }
+                ]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => `৳${ctx.parsed.y}M`
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    grid: { color: 'rgba(148,163,184,0.15)', drawBorder: false },
+                    ticks: { callback: (v) => `৳${v}M` }
+                  },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const turnoverCtx = document.getElementById('turnoverBenchmarkChart')
+          if (turnoverCtx) {
+            window.iDashDemo.createChart(turnoverCtx, {
+              type: 'line',
+              data: {
+                labels: ['Orbit Retail', 'Pharma', 'Electronics', 'Home & Living'],
+                datasets: [
+                  {
+                    label: 'Turns',
+                    data: [7.4, 8.6, 6.2, 5.8],
+                    borderColor: '#2563eb',
+                    borderWidth: 3,
+                    tension: 0.34,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Coverage (days)',
+                    data: [42, 38, 47, 52],
+                    borderColor: '#f97316',
+                    borderWidth: 3,
+                    tension: 0.34,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    yAxisID: 'y1'
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                scales: {
+                  y: {
+                    position: 'left',
+                    grid: { color: 'rgba(148,163,184,0.12)', drawBorder: false },
+                    ticks: { callback: (v) => `${v}×` }
+                  },
+                  y1: {
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: { callback: (v) => `${v}d` }
+                  },
+                  x: { grid: { display: false } }
+                },
+                plugins: {
+                  legend: { position: 'bottom' }
                 }
               }
             })

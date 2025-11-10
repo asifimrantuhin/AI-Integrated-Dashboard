@@ -87,6 +87,23 @@
           </article>
         </section>
 
+        <section class="grid-2" style="gap:18px;">
+          <article class="chart-card" style="min-height: 320px;">
+            <div>
+              <h3>Business Unit Budget vs Actual</h3>
+              <p style="color: var(--muted); font-size: 13px;">Comparison (৳ million)</p>
+            </div>
+            <canvas id="budgetVsActualChart"></canvas>
+          </article>
+          <article class="chart-card" style="min-height: 320px;">
+            <div>
+              <h3>Expense Run Rate</h3>
+              <p style="color: var(--muted); font-size: 13px;">Rolling 6-month trend (৳ million)</p>
+            </div>
+            <canvas id="expenseRunRateChart"></canvas>
+          </article>
+        </section>
+
         <section class="grid-2" style="grid-template-columns: 2fr 1fr;">
           <article class="chart-card" style="min-height: 380px;">
             <div>
@@ -349,6 +366,92 @@
                 plugins: { legend: { position: 'bottom' } },
                 scales: {
                   y: { ticks: { callback: (v) => `৳${v}M` }, grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false } },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const budgetCtx = document.getElementById('budgetVsActualChart')
+          if (budgetCtx) {
+            window.iDashDemo.createChart(budgetCtx, {
+              type: 'bar',
+              data: {
+                labels: ['Retail', 'Wholesale', 'D2C', 'International'],
+                datasets: [
+                  {
+                    label: 'Budget',
+                    data: [2150, 1680, 1420, 980],
+                    backgroundColor: '#cbd5f5',
+                    borderRadius: 6
+                  },
+                  {
+                    label: 'Actual',
+                    data: [2225, 1540, 1580, 1045],
+                    backgroundColor: '#2563eb',
+                    borderRadius: 6
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                  legend: { position: 'bottom' },
+                  tooltip: {
+                    callbacks: {
+                      label: (ctx) => `${ctx.dataset.label}: ৳${ctx.parsed.y}M`
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    grid: { color: 'rgba(148,163,184,0.15)', drawBorder: false },
+                    ticks: { callback: (v) => `৳${v}M` }
+                  },
+                  x: { grid: { display: false } }
+                }
+              }
+            })
+          }
+
+          const expenseCtx = document.getElementById('expenseRunRateChart')
+          if (expenseCtx) {
+            window.iDashDemo.createChart(expenseCtx, {
+              type: 'line',
+              data: {
+                labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                datasets: [
+                  {
+                    label: 'Operating Expense',
+                    data: [3820, 3740, 3610, 3560, 3480, 3440],
+                    borderColor: '#0ea5e9',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.32
+                  },
+                  {
+                    label: 'Capital Expense',
+                    data: [640, 660, 720, 780, 860, 920],
+                    borderColor: '#f97316',
+                    borderDash: [6, 6],
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff',
+                    tension: 0.32
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
+                },
+                scales: {
+                  y: {
+                    ticks: { callback: (v) => `৳${v}M` },
+                    grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false }
+                  },
                   x: { grid: { display: false } }
                 }
               }

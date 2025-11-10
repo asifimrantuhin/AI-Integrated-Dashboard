@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\Log;
 
 class SupplyChainUploadController extends Controller
 {
+    private const DATA_TYPES = [
+        'po_data',
+        'grn_data',
+        'invoice_data',
+        'supplier_performance',
+    ];
+
     public function index()
     {
         $uploads = FileUpload::where('module', 'supplychain')
@@ -30,7 +37,7 @@ class SupplyChainUploadController extends Controller
     {
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
-            'data_type' => 'required|in:po_data,grn_data,invoice_data,raw_data',
+            'data_type' => 'required|in:' . implode(',', self::DATA_TYPES),
         ]);
 
         try {
@@ -53,13 +60,15 @@ class SupplyChainUploadController extends Controller
 
             return redirect()->route('admin.upload.supplychain.index')
                 ->with('success', 'Supply Chain data uploaded and processed successfully!');
-        } catch (\Exception $e) {
-            Log::error('Supply Chain upload error: ' . $e->getMessage());
-            
+        } catch (\Throwable $e) {
+            Log::error('Supply Chain upload error: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+            ]);
+
             if (isset($upload)) {
                 $upload->update([
                     'status' => 'failed',
-                    'error_message' => $e->getMessage()
+                    'error_message' => $e->getMessage(),
                 ]);
             }
 
@@ -73,14 +82,14 @@ class SupplyChainUploadController extends Controller
     {
         $upload = FileUpload::findOrFail($id);
         $data = $this->getUploadData($upload);
-        
+
         return view('admin.upload.supplychain.show', compact('upload', 'data'));
     }
 
     public function downloadSample($dataType)
     {
         $samplePath = storage_path('app/samples/supplychain/' . $dataType . '_sample.xlsx');
-        
+
         if (file_exists($samplePath)) {
             return response()->download($samplePath);
         }
@@ -103,7 +112,7 @@ class SupplyChainUploadController extends Controller
             }
 
             return array_slice($data, 0, 100);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [];
         }
     }
@@ -111,12 +120,13 @@ class SupplyChainUploadController extends Controller
     private function parseCsv($filePath)
     {
         $data = [];
-        if (($handle = fopen($filePath, "r")) !== false) {
-            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+        if (($handle = fopen($filePath, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
                 $data[] = $row;
             }
             fclose($handle);
         }
+
         return $data;
     }
 }

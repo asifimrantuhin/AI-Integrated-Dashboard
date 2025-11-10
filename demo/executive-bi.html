@@ -99,6 +99,36 @@
           </article>
         </section>
 
+        <section class="grid-3" style="gap:18px;">
+          <article class="card" style="gap:16px;">
+            <h3>Sales Pulse</h3>
+            <div class="metric">৳ 3,360M forecast</div>
+            <p style="color: var(--muted); font-size: 13px;">AI flags D2C surge (+12%) and retail softness (-6%). Margin resilience intact.</p>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#22c55e;">trending_up</span>Order book coverage 1.4× with 87% win-rate.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#f97316;">warning</span>North retail promo required to recover ৳ 48M gap.</li>
+            </ul>
+          </article>
+          <article class="card" style="gap:16px;">
+            <h3>Production &amp; Inventory</h3>
+            <div class="metric">OEE 87.4% · Coverage 42d</div>
+            <p style="color: var(--muted); font-size: 13px;">Balanced throughput after maintenance catch-up; watch Plant 3 thermal risk.</p>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#0ea5e9;">build_circle</span>Maintenance backlog cleared, C-17 bearing upgrade pending.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#22c55e;">inventory</span>Slow mover reduction plan frees ৳ 210M working capital.</li>
+            </ul>
+          </article>
+          <article class="card" style="gap:16px;">
+            <h3>Finance &amp; HR Outlook</h3>
+            <div class="metric">Cash runway 9.8 months</div>
+            <p style="color: var(--muted); font-size: 13px;">Attrition steady at 3.9% forecast; EBITDA +৳ 212M vs plan.</p>
+            <ul class="insight-list">
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#2563eb;">groups</span>Critical skill attrition down 1.2 pts after retention program.</li>
+              <li class="insight-item"><span class="material-icons-outlined" style="color:#facc15;">payments</span>Working capital unlock of ৳ 180M available via supplier program.</li>
+            </ul>
+          </article>
+        </section>
+
         <section class="grid-2" style="grid-template-columns: 2fr 1fr; align-items: stretch;">
           <article class="chart-card" style="min-height: 420px;">
             <div>
@@ -125,6 +155,16 @@
               </ul>
             </article>
           </div>
+        </section>
+
+        <section class="section-divider"></section>
+
+        <section class="chart-card">
+          <div>
+            <h3>Module Risk Radar</h3>
+            <p style="color: var(--muted); font-size: 13px;">AI generated composite risk score (0–100)</p>
+          </div>
+          <canvas id="moduleRiskChart"></canvas>
         </section>
 
         <section class="grid-2">
@@ -246,62 +286,106 @@
     (function initExecutiveCharts() {
       const register = () => {
         window.iDashDemo.onReady(() => {
-          const ctx = document.getElementById('supplyTrend')
-          if (!ctx) return
-
-          window.iDashDemo.createChart(ctx, {
-            type: 'line',
-            data: {
-              labels: ['2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09'],
-              datasets: [
-                {
-                  label: 'PO Value',
-                  data: [6050, 6120, 6340, 6480, 6720, 6880],
-                  borderColor: '#2563eb',
-                  backgroundColor: 'rgba(37, 99, 235, 0.18)',
-                  tension: 0.38,
-                  fill: true,
-                  pointRadius: 3,
-                  pointBackgroundColor: '#fff'
-                },
-                {
-                  label: 'GRN Value',
-                  data: [5980, 6040, 6200, 6320, 6480, 6620],
-                  borderColor: '#0ea5e9',
-                  backgroundColor: 'rgba(14, 165, 233, 0.18)',
-                  tension: 0.38,
-                  fill: true,
-                  pointRadius: 3,
-                  pointBackgroundColor: '#fff'
-                },
-                {
-                  label: 'Invoice Value',
-                  data: [5840, 5900, 6060, 6180, 6320, 6440],
-                  borderColor: '#f97316',
-                  backgroundColor: 'rgba(249, 115, 22, 0.18)',
-                  tension: 0.38,
-                  fill: true,
-                  pointRadius: 3,
-                  pointBackgroundColor: '#fff'
-                }
-              ]
-            },
-            options: {
-              maintainAspectRatio: false,
-              plugins: {
-                legend: { position: 'bottom' }
-              },
-              scales: {
-                y: {
-                  grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false },
-                  ticks: {
-                    callback: (v) => `৳${v}M`
+          const supplyCtx = document.getElementById('supplyTrend')
+          if (supplyCtx) {
+            window.iDashDemo.createChart(supplyCtx, {
+              type: 'line',
+              data: {
+                labels: ['2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09'],
+                datasets: [
+                  {
+                    label: 'PO Value',
+                    data: [6050, 6120, 6340, 6480, 6720, 6880],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.18)',
+                    tension: 0.38,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'GRN Value',
+                    data: [5980, 6040, 6200, 6320, 6480, 6620],
+                    borderColor: '#0ea5e9',
+                    backgroundColor: 'rgba(14, 165, 233, 0.18)',
+                    tension: 0.38,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
+                  },
+                  {
+                    label: 'Invoice Value',
+                    data: [5840, 5900, 6060, 6180, 6320, 6440],
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.18)',
+                    tension: 0.38,
+                    fill: true,
+                    pointRadius: 3,
+                    pointBackgroundColor: '#fff'
                   }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
                 },
-                x: { grid: { display: false } }
+                scales: {
+                  y: {
+                    grid: { color: 'rgba(148,163,184,0.2)', drawBorder: false },
+                    ticks: {
+                      callback: (v) => `৳${v}M`
+                    }
+                  },
+                  x: { grid: { display: false } }
+                }
               }
-            }
-          })
+            })
+          }
+
+          const moduleRiskCtx = document.getElementById('moduleRiskChart')
+          if (moduleRiskCtx) {
+            window.iDashDemo.createChart(moduleRiskCtx, {
+              type: 'radar',
+              data: {
+                labels: ['Sales', 'Finance', 'Production', 'Inventory', 'HR', 'Supply Chain'],
+                datasets: [
+                  {
+                    label: 'Current Risk',
+                    data: [42, 38, 46, 34, 29, 37],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.18)',
+                    pointBackgroundColor: '#ef4444'
+                  },
+                  {
+                    label: 'Projected Risk (30d)',
+                    data: [36, 33, 39, 28, 26, 32],
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.18)',
+                    pointBackgroundColor: '#22c55e'
+                  }
+                ]
+              },
+              options: {
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { position: 'bottom' }
+                },
+                scales: {
+                  r: {
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    grid: { color: 'rgba(148,163,184,0.2)' },
+                    angleLines: { color: 'rgba(148,163,184,0.2)' },
+                    ticks: {
+                      stepSize: 20,
+                      callback: (v) => `${v}`
+                    }
+                  }
+                }
+              }
+            })
+          }
         })
       }
 
