@@ -7,9 +7,10 @@ import (
 	"log"
 	"net/http"
 
+	"idash-backend-api/middleware"
+
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
-	"idash-backend-api/middleware"
 )
 
 func main() {
@@ -20,10 +21,12 @@ func main() {
 	e.Use(middleware.SecurityHeaders())
 	e.Use(middleware.RequestLogger())
 	e.Use(middleware.RateLimiter())
+	// Allow common headers including a custom x-request-id used by the frontend
 	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
-		AllowOrigins: []string{"https://idash.example.com", "http://localhost:3000"},
-		AllowMethods: []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
-		AllowHeaders: []string{echo.HeaderAuthorization, echo.HeaderContentType},
+		AllowOrigins:     []string{"https://idash.example.com", "http://localhost:3000"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderAccept, echo.HeaderContentType, echo.HeaderAuthorization, "X-Requested-With", "x-request-id"},
+		AllowCredentials: true,
 	}))
 
 	// Load configuration
@@ -33,10 +36,9 @@ func main() {
 	database.InitDB()
 
 	// Register routes
-	routes.Register(e)
+	routes.SetupRoutes(e)
 
 	// Start Server
 	log.Printf("Starting server on port %s", config.AppConfig.APIPort)
 	e.Logger.Fatal(e.Start(":" + config.AppConfig.APIPort))
 }
-

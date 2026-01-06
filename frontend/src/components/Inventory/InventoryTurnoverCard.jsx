@@ -1,9 +1,10 @@
 import { Card, CardContent, Typography, Grid } from '@mui/material'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatNumber = (value, fraction = 1) =>
   typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: fraction }) : value
 
-const InventoryTurnoverCard = ({ turnover }) => {
+const InventoryTurnoverCard = ({ turnover } = {}) => {
   if (!turnover) {
     return null
   }
@@ -19,16 +20,16 @@ const InventoryTurnoverCard = ({ turnover }) => {
             <Typography variant="body2" color="text.secondary">
               Average Inventory
             </Typography>
-            <Typography variant="h6">
-              ৳ {formatNumber(turnover.average_inventory, 0)}
+              <Typography variant="h6">
+                {formatCurrencyCrore(turnover.average_inventory)}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>
             <Typography variant="body2" color="text.secondary">
               COGS
             </Typography>
-            <Typography variant="h6">
-              ৳ {formatNumber(turnover.cogs, 0)}
+              <Typography variant="h6">
+                {formatCurrencyCrore(turnover.cogs)}
             </Typography>
           </Grid>
           <Grid item xs={12} sm={6}>

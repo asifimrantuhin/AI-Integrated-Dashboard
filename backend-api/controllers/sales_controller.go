@@ -385,22 +385,12 @@ func GetOrderVsDelivery(c echo.Context) error {
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	endDate := startDate.AddDate(0, 1, 0).Add(-24 * time.Hour)
 
-	var orders []models.SalesOrder
-	var deliveries []models.SalesDelivery
+	var totalOrders float64
+	var totalDeliveries float64
 
-	database.DB.Where("order_date >= ? AND order_date <= ?", startDate, endDate).Find(&orders)
-	database.DB.Where("delivery_date >= ? AND delivery_date <= ?", startDate, endDate).Find(&deliveries)
-
-	totalOrders := 0.0
-	totalDeliveries := 0.0
-
-	for _, order := range orders {
-		totalOrders += order.Amount
-	}
-
-	for _, delivery := range deliveries {
-		totalDeliveries += delivery.Amount
-	}
+	// Use monthly order/delivery summaries if available
+	database.DB.Raw(`SELECT COALESCE(SUM(amounts),0) FROM order_delivery_summaries WHERE months BETWEEN ? AND ? AND types = 0`, startDate, endDate).Scan(&totalOrders)
+	database.DB.Raw(`SELECT COALESCE(SUM(amounts),0) FROM order_delivery_summaries WHERE months BETWEEN ? AND ? AND types = 1`, startDate, endDate).Scan(&totalDeliveries)
 
 	result := map[string]interface{}{
 		"year_month":       yearMonth,
@@ -456,9 +446,9 @@ type ForecastPoint struct {
 }
 
 type SalesForecastSummary struct {
-	ForecastType        string          `json:"forecast_type,omitempty"`
-	EntityID            string          `json:"entity_id,omitempty"`
-	ForecastPeriodDays  int             `json:"forecast_period_days,omitempty"`
+	ForecastType         string          `json:"forecast_type,omitempty"`
+	EntityID             string          `json:"entity_id,omitempty"`
+	ForecastPeriodDays   int             `json:"forecast_period_days,omitempty"`
 	TotalForecast        float64         `json:"total_forecast"`
 	AverageDailyForecast float64         `json:"average_daily_forecast"`
 	ConfidenceLevel      float64         `json:"confidence_level"`
@@ -467,21 +457,21 @@ type SalesForecastSummary struct {
 }
 
 type SalesOverviewResponse struct {
-	KPIs            []SalesKPI            `json:"kpis"`
-	Channels        []ChannelPerformance  `json:"channels"`
-	Products        ProductPerformance    `json:"products"`
-	Trend           []SalesTrendPoint     `json:"trend"`
-	Forecast        *SalesForecastSummary `json:"forecast"`
-	Alerts          []string              `json:"alerts"`
+	KPIs            []SalesKPI               `json:"kpis"`
+	Channels        []ChannelPerformance     `json:"channels"`
+	Products        ProductPerformance       `json:"products"`
+	Trend           []SalesTrendPoint        `json:"trend"`
+	Forecast        *SalesForecastSummary    `json:"forecast"`
+	Alerts          []string                 `json:"alerts"`
 	Predictions     []map[string]interface{} `json:"predictions,omitempty"`
 	Recommendations []map[string]interface{} `json:"recommendations,omitempty"`
 	Anomalies       map[string]interface{}   `json:"anomalies,omitempty"`
 	Scenario        map[string]interface{}   `json:"scenario,omitempty"`
-	LastUpdated     time.Time             `json:"last_updated"`
-	Insights        []string              `json:"insights"`
-	Targets         []SalesTargetVariance `json:"targets"`
-	Promotions      []SalesPromotionInsight `json:"promotions"`
-	Pipeline        SalesPipelineSnapshot `json:"pipeline"`
+	LastUpdated     time.Time                `json:"last_updated"`
+	Insights        []string                 `json:"insights"`
+	Targets         []SalesTargetVariance    `json:"targets"`
+	Promotions      []SalesPromotionInsight  `json:"promotions"`
+	Pipeline        SalesPipelineSnapshot    `json:"pipeline"`
 }
 
 type forecastDetail struct {
@@ -517,12 +507,12 @@ type SalesPipelineStage struct {
 }
 
 type SalesPipelineSnapshot struct {
-	TotalOrders     int                  `json:"total_orders"`
-	TotalValue      float64              `json:"total_value"`
-	DeliveredValue  float64              `json:"delivered_value"`
-	PendingValue    float64              `json:"pending_value"`
-	ConversionRate  float64              `json:"conversion_rate"`
-	Stages          []SalesPipelineStage `json:"stages"`
+	TotalOrders    int                  `json:"total_orders"`
+	TotalValue     float64              `json:"total_value"`
+	DeliveredValue float64              `json:"delivered_value"`
+	PendingValue   float64              `json:"pending_value"`
+	ConversionRate float64              `json:"conversion_rate"`
+	Stages         []SalesPipelineStage `json:"stages"`
 }
 
 type SalesPromotionInsight struct {
@@ -584,11 +574,11 @@ func GetSalesOverview(c echo.Context) error {
 			SlowMovers:        make([]ProductMetric, 0),
 			BestProductGroups: make([]ProductMetric, 0),
 		},
-		Trend:       make([]SalesTrendPoint, 0),
-		Alerts:      make([]string, 0),
-		Insights:    make([]string, 0),
-		Targets:     make([]SalesTargetVariance, 0),
-		Promotions:  make([]SalesPromotionInsight, 0),
+		Trend:      make([]SalesTrendPoint, 0),
+		Alerts:     make([]string, 0),
+		Insights:   make([]string, 0),
+		Targets:    make([]SalesTargetVariance, 0),
+		Promotions: make([]SalesPromotionInsight, 0),
 		Pipeline: SalesPipelineSnapshot{
 			Stages: make([]SalesPipelineStage, 0),
 		},
@@ -986,14 +976,14 @@ func GetSalesOverview(c echo.Context) error {
 		}
 
 		forecastSummary := &SalesForecastSummary{
-			ForecastType:        forecastModel.ForecastType,
-			EntityID:            forecastModel.EntityID,
-			ForecastPeriodDays:  30,
-			ConfidenceLevel:     forecastModel.ConfidenceLevel,
-			TotalForecast:       forecastModel.ForecastedValue,
+			ForecastType:         forecastModel.ForecastType,
+			EntityID:             forecastModel.EntityID,
+			ForecastPeriodDays:   30,
+			ConfidenceLevel:      forecastModel.ConfidenceLevel,
+			TotalForecast:        forecastModel.ForecastedValue,
 			AverageDailyForecast: 0,
-			ModelUsed:           forecastModel.ModelUsed,
-			ForecastData:        make([]ForecastPoint, 0),
+			ModelUsed:            forecastModel.ModelUsed,
+			ForecastData:         make([]ForecastPoint, 0),
 		}
 		if forecastSummary.ForecastPeriodDays > 0 {
 			forecastSummary.AverageDailyForecast = forecastModel.ForecastedValue / float64(forecastSummary.ForecastPeriodDays)
@@ -1013,9 +1003,9 @@ func GetSalesOverview(c echo.Context) error {
 
 	// Predictive summary & prescriptive recommendations
 	predictionPayload := map[string]interface{}{
-		"start_date": trendStart.Format("2006-01-02"),
-		"end_date":   endDate.Format("2006-01-02"),
-		"horizon":    30,
+		"start_date":  trendStart.Format("2006-01-02"),
+		"end_date":    endDate.Format("2006-01-02"),
+		"horizon":     30,
 		"granularity": "channel",
 	}
 	var predictionResp SalesPredictionResponse
@@ -1026,10 +1016,10 @@ func GetSalesOverview(c echo.Context) error {
 
 	// Enriched anomaly detection
 	anomalyPayload := map[string]interface{}{
-		"metric":       "sales",
+		"metric":        "sales",
 		"analysis_type": "anomaly",
-		"start_date":   trendStart.Format("2006-01-02"),
-		"end_date":     endDate.Format("2006-01-02"),
+		"start_date":    trendStart.Format("2006-01-02"),
+		"end_date":      endDate.Format("2006-01-02"),
 	}
 	var anomalyResp map[string]interface{}
 	if err := callAISummary("/api/analyze/anomaly/enriched", anomalyPayload, &anomalyResp); err == nil {
@@ -1044,8 +1034,8 @@ func GetSalesOverview(c echo.Context) error {
 			"gross_margin": current.PrimaryCollection,
 		},
 		"adjustments": map[string]float64{
-			"price_change_pct":   2,
-			"volume_change_pct":  1,
+			"price_change_pct":  2,
+			"volume_change_pct": 1,
 			"cost_change_pct":   -0.5,
 		},
 	}

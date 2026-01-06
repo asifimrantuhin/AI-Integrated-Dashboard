@@ -1,5 +1,7 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import uvicorn
@@ -29,11 +31,68 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# HTTP exception handler (404, etc.) - must come before general Exception handler
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Handle HTTP exceptions (including 404) and return JSON"""
+    if exc.status_code == 404:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": True,
+                "message": f"Endpoint not found: {request.url.path}",
+                "status_code": 404,
+                "available_endpoints": {
+                    "root": "/",
+                    "health": "/health",
+                    "docs": "/docs",
+                    "sales_forecast": "/api/forecast/sales",
+                    "production_forecast": "/api/forecast/production",
+                    "financial_forecast": "/api/forecast/finance",
+                    "inventory_forecast": "/api/forecast/inventory",
+                    "sales_prediction": "/api/predict/sales/summary",
+                    "inventory_prescription": "/api/prescribe/inventory",
+                    "financial_prescription": "/api/prescribe/finance",
+                    "scenario": "/api/scenario/whatif",
+                    "analysis": "/api/analyze"
+                }
+            }
+        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": True,
+            "message": exc.detail,
+            "status_code": exc.status_code
+        }
+    )
+
+# Global exception handler to ensure valid JSON responses
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Handle all unhandled exceptions and return valid JSON"""
+    import traceback
+    error_detail = str(exc)
+    print(f"Unhandled exception: {error_detail}")
+    print(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": True,
+            "message": error_detail,
+            "status_code": 500
+        }
+    )
+
 # Initialize services
-forecast_service = ForecastService()
-analysis_service = AnalysisService()
-prescriptive_service = PrescriptiveService()
-database = Database()
+try:
+    forecast_service = ForecastService()
+    analysis_service = AnalysisService()
+    prescriptive_service = PrescriptiveService()
+    database = Database()
+except Exception as e:
+    print(f"Warning: Error initializing services: {e}")
+    print("Server will start but some features may not work until database is configured.")
 
 class ForecastRequest(BaseModel):
     forecast_type: str  # sales, production, finance, inventory
@@ -510,6 +569,7 @@ async def get_forecast(forecast_id: str):
 def health_check():
     return {"status": "healthy", "service": "AI Forecasting Service"}
 
+
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 8000))
+    port = int(os.getenv("PORT", 8888))
     uvicorn.run(app, host="0.0.0.0", port=port)

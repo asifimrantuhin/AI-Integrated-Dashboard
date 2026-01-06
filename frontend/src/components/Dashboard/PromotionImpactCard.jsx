@@ -2,11 +2,7 @@ import CampaignIcon from '@mui/icons-material/Campaign'
 import InsightsIcon from '@mui/icons-material/Insights'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import { Avatar, Card, CardContent, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material'
-
-const formatCurrency = (value) =>
-  typeof value === 'number'
-    ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-    : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatPercent = (value) =>
   typeof value === 'number' ? `${value.toFixed(1)}%` : value
@@ -48,12 +44,12 @@ const PromotionImpactCard = ({ promotions = [], title = 'Promotion Impact', maxI
                     <Stack direction="row" spacing={1} alignItems="center">
                       <TrendingUpIcon fontSize="small" color="primary" />
                       <Typography variant="caption" color="text.secondary">
-                        Uplift: {formatCurrency(promo.revenue_uplift || 0)} ({formatPercent(promo.uplift_percentage || 0)})
+                        Uplift: {formatCurrencyCrore(promo.revenue_uplift || 0)} ({formatPercent(promo.uplift_percentage || 0)})
                       </Typography>
                     </Stack>
                     <Stack direction="row" spacing={2} flexWrap="wrap">
                       <Typography variant="caption" color="text.secondary">
-                        Spend: {formatCurrency(promo.spend_amount || 0)}
+                        Spend: {formatCurrencyCrore(promo.spend_amount || 0)}
                       </Typography>
                       <Typography variant="caption" color={promo.roi >= 100 ? 'success.main' : 'warning.main'}>
                         ROI: {formatPercent(promo.roi || 0)}

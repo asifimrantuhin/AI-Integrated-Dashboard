@@ -2,8 +2,7 @@ import { Card, CardContent, Typography, List, ListItem, ListItemIcon, ListItemTe
 import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 
-const formatCurrency = (value) =>
-  typeof value === 'number' ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const SupplyAlertsCard = ({ alerts = [], forecast }) => (
   <Card>
@@ -36,10 +35,10 @@ const SupplyAlertsCard = ({ alerts = [], forecast }) => (
                 <AssessmentIcon color="primary" />
               </ListItemIcon>
               <ListItemText
-                primary={`Forecast Spend: ${formatCurrency(forecast.total_forecast)}`}
+                primary={`Forecast Spend: ${formatCurrencyCrore(forecast.total_forecast)}`}
                 secondary={
                   forecast.average_daily_forecast
-                    ? `Avg Daily Forecast: ${formatCurrency(forecast.average_daily_forecast)}`
+                    ? `Avg Daily Forecast: ${formatCurrencyCrore(forecast.average_daily_forecast)}`
                     : undefined
                 }
               />

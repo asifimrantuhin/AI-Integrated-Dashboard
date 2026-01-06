@@ -24,10 +24,10 @@ func GetHRSummary(c echo.Context) error {
 	}
 
 	type HRSummary struct {
-		TotalEmployees   int     `json:"total_employees"`
-		PresentEmployees int     `json:"present_employees"`
-		AbsentEmployees  int     `json:"absent_employees"`
-		TotalPromotions  int     `json:"total_promotions"`
+		TotalEmployees   int64   `json:"total_employees"`
+		PresentEmployees int64   `json:"present_employees"`
+		AbsentEmployees  int64   `json:"absent_employees"`
+		TotalPromotions  int64   `json:"total_promotions"`
 		AttendanceRate   float64 `json:"attendance_rate"`
 	}
 
@@ -280,7 +280,7 @@ type HRKPI struct {
 	Change float64 `json:"change"`
 }
 
-type DepartmentPerformance struct {
+type HRDepartmentPerformance struct {
 	Department     string  `json:"department"`
 	TotalEmployees int     `json:"total_employees"`
 	PresentCount   int     `json:"present_count"`
@@ -317,16 +317,16 @@ type HRForecastSummary struct {
 }
 
 type HROverviewResponse struct {
-	KPIs             []HRKPI                  `json:"kpis"`
-	Departments      []DepartmentPerformance  `json:"departments"`
-	Movements        []WorkforceMovement      `json:"movements"`
-	Trend            []HRTrendPoint           `json:"trend"`
-	Forecast         *HRForecastSummary       `json:"forecast"`
-	Alerts           []string                 `json:"alerts"`
-	Insights         []string                 `json:"insights"`
-	Recommendations  []map[string]interface{} `json:"recommendations,omitempty"`
-	ExecutiveSummary []string                 `json:"executive_summary,omitempty"`
-	LastUpdated      time.Time                `json:"last_updated"`
+	KPIs             []HRKPI                   `json:"kpis"`
+	Departments      []HRDepartmentPerformance `json:"departments"`
+	Movements        []WorkforceMovement       `json:"movements"`
+	Trend            []HRTrendPoint            `json:"trend"`
+	Forecast         *HRForecastSummary        `json:"forecast"`
+	Alerts           []string                  `json:"alerts"`
+	Insights         []string                  `json:"insights"`
+	Recommendations  []map[string]interface{}  `json:"recommendations,omitempty"`
+	ExecutiveSummary []string                  `json:"executive_summary,omitempty"`
+	LastUpdated      time.Time                 `json:"last_updated"`
 }
 
 type hrSummaryRow struct {
@@ -361,12 +361,11 @@ func GetHROverview(c echo.Context) error {
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	endDate := startDate.AddDate(0, 1, 0).Add(-24 * time.Hour)
 
-	prevStart := startDate.AddDate(0, -1, 0)
-	prevEnd := endDate.AddDate(0, -1, 0)
+	// previous period not used directly here (kept for future use)
 
 	resp := HROverviewResponse{
 		KPIs:             make([]HRKPI, 0),
-		Departments:      make([]DepartmentPerformance, 0),
+		Departments:      make([]HRDepartmentPerformance, 0),
 		Movements:        make([]WorkforceMovement, 0),
 		Trend:            make([]HRTrendPoint, 0),
 		Alerts:           make([]string, 0),
@@ -469,7 +468,7 @@ func GetHROverview(c echo.Context) error {
 	`, append([]interface{}{startDate, endDate, year}, departmentFilterParams(department)...)...).Scan(&deptAnalytics)
 
 	for _, row := range deptAnalytics {
-		resp.Departments = append(resp.Departments, DepartmentPerformance{
+		resp.Departments = append(resp.Departments, HRDepartmentPerformance{
 			Department:     row.Department,
 			TotalEmployees: row.TotalEmployees,
 			PresentCount:   row.PresentCount,

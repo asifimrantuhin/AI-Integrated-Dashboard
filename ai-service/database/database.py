@@ -9,7 +9,7 @@ import uuid
 class Database:
     def __init__(self):
         self.connection = None
-        self.connect()
+        # Don't connect on initialization - connect lazily when needed
     
     def connect(self):
         """Establish database connection"""
@@ -25,11 +25,15 @@ class Database:
             )
         except Error as e:
             print(f"Error connecting to database: {e}")
-            raise
+            self.connection = None
+            # Don't raise - allow server to start even if DB is unavailable
     
     def _fetch_all(self, query: str, params: tuple) -> List[Dict]:
         try:
             self.connect()
+            if self.connection is None or not self.connection.is_connected():
+                print("Database connection not available")
+                return []
             cursor = self.connection.cursor(dictionary=True)
             cursor.execute(query, params)
             results = cursor.fetchall()
@@ -37,6 +41,9 @@ class Database:
             return results
         except Error as e:
             print(f"Database query failed: {e}")
+            return []
+        except Exception as e:
+            print(f"Database error: {e}")
             return []
     
     def get_sales_data(self, start_date: str, end_date: str, company_id: Optional[int] = None,

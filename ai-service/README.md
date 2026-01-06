@@ -24,10 +24,10 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 
 cp .env.example .env  # configure DB_* values
-uvicorn main:app --reload --port 8000
+uvicorn main:app --reload --port 8888
 ```
 
-Expose Swagger UI at `http://localhost:8000/docs` and ReDoc at `/redoc`.
+Expose Swagger UI at `http://localhost:8888/docs` and ReDoc at `/redoc`.
 
 ---
 

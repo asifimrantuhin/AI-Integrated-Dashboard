@@ -14,6 +14,7 @@ import {
 
 const formatNumber = (value) =>
   typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const SalesChannelTable = ({ channels = [] }) => {
   if (!channels.length) {
@@ -41,8 +42,8 @@ const SalesChannelTable = ({ channels = [] }) => {
               {channels.map((channel) => (
                 <TableRow key={channel.channel_id || channel.channel_name}>
                   <TableCell>{channel.channel_name}</TableCell>
-                  <TableCell align="right">৳ {formatNumber(channel.billed)}</TableCell>
-                  <TableCell align="right">৳ {formatNumber(channel.target)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(channel.billed)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(channel.target)}</TableCell>
                   <TableCell align="right">
                     <Box display="flex" alignItems="center" gap={1}>
                       <Box width="100%">

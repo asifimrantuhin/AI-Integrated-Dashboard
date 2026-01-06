@@ -1,6 +1,7 @@
 import { Card, CardContent, Typography, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import BuildCircleIcon from '@mui/icons-material/BuildCircle'
 import AccessTimeIcon from '@mui/icons-material/AccessTime'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatNumber = (value, fraction = 0) =>
   typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: fraction }) : value
@@ -24,7 +25,7 @@ const MaintenanceIssuesCard = ({ maintenance = [] }) => {
               </ListItemIcon>
               <ListItemText
                 primary={`${item.machine_code} - ${item.machine_name || 'Machine'}`}
-                secondary={`Downtime: ${formatNumber(item.downtime_minutes)} mins | Events: ${item.events} | Cost: ৳ ${formatNumber(item.cost, 0)} | Last: ${item.last_date ? new Date(item.last_date).toLocaleDateString() : 'N/A'}`}
+                secondary={`Downtime: ${formatNumber(item.downtime_minutes)} mins | Events: ${item.events} | Cost: ${formatCurrencyCrore(item.cost)} | Last: ${item.last_date ? new Date(item.last_date).toLocaleDateString() : 'N/A'}`}
               />
               <AccessTimeIcon fontSize="small" color="action" sx={{ ml: 1 }} />
             </ListItem>

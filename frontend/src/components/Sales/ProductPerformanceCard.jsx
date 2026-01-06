@@ -1,4 +1,5 @@
 import { Card, CardContent, Typography, Grid, List, ListItem, ListItemText } from '@mui/material'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatValue = (value) =>
   typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: 0 }) : value
@@ -12,9 +13,9 @@ const ProductList = ({ title, items = [] }) => (
       <List dense>
         {items.slice(0, 7).map((item, index) => (
           <ListItem key={`${title}-${item.name}-${index}`} disablePadding>
-            <ListItemText
+              <ListItemText
               primary={item.name}
-              secondary={`Sales: ৳ ${formatValue(item.value)} | Qty: ${formatValue(item.quantity)}`}
+              secondary={`Sales: ${formatCurrencyCrore(item.value)} | Qty: ${formatValue(item.quantity)}`}
             />
           </ListItem>
         ))}

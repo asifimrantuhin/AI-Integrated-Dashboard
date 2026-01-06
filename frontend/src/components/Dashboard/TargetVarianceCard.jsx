@@ -1,11 +1,7 @@
 import TrendingDownIcon from '@mui/icons-material/TrendingDown'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
 import { Card, CardContent, LinearProgress, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material'
-
-const formatCurrency = (value) =>
-  typeof value === 'number'
-    ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-    : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const TargetVarianceCard = ({ targets = [], title = 'Target vs Actual', maxRows = 5 }) => {
   if (!targets?.length) {
@@ -59,10 +55,10 @@ const TargetVarianceCard = ({ targets = [], title = 'Target vs Actual', maxRows 
                         />
                       </Stack>
                     </TableCell>
-                    <TableCell align="right">{formatCurrency(row.revenue_target || 0)}</TableCell>
-                    <TableCell align="right">{formatCurrency(row.actual_revenue || 0)}</TableCell>
+                    <TableCell align="right">{formatCurrencyCrore(row.revenue_target || 0)}</TableCell>
+                    <TableCell align="right">{formatCurrencyCrore(row.actual_revenue || 0)}</TableCell>
                     <TableCell align="right" sx={{ color: gapPositive ? 'error.main' : 'success.main', fontWeight: 600 }}>
-                      {formatCurrency(row.revenue_gap || 0)}
+                      {formatCurrencyCrore(row.revenue_gap || 0)}
                     </TableCell>
                   </TableRow>
                 )

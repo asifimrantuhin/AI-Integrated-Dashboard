@@ -1,5 +1,6 @@
 import { Card, CardContent, Typography, List, ListItem, ListItemIcon, ListItemText, Divider } from '@mui/material'
 import ScienceIcon from '@mui/icons-material/Science'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatNumber = (value, fraction = 0) =>
   typeof value === 'number' ? value.toLocaleString(undefined, { maximumFractionDigits: fraction }) : value
@@ -24,7 +25,7 @@ const WastageCostCard = ({ wastage = [] }) => {
                 </ListItemIcon>
                 <ListItemText
                   primary={item.factory || 'Unknown Factory'}
-                  secondary={`Wastage: ${formatNumber(item.wastage, 1)} | Cost: ৳ ${formatNumber(item.amount, 0)} | Rate: ${formatNumber(item.rate, 2)}%`}
+                  secondary={`Wastage: ${formatNumber(item.wastage, 1)} | Cost: ${formatCurrencyCrore(item.amount)} | Rate: ${formatNumber(item.rate, 2)}%`}
                 />
               </ListItem>
               {index < wastage.length - 1 && <Divider component="li" />}

@@ -9,12 +9,12 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
-const formatCurrency = (value) =>
-  typeof value === 'number' ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : value
-
-const InventoryCompanyTable = ({ companies = [] }) => {
-  if (!companies.length) {
+const InventoryCompanyTable = ({ companies } = {}) => {
+  // Make destructuring safe if `props` is null and ensure companies is an array
+  const safeCompanies = Array.isArray(companies) ? companies : (companies ? [companies] : [])
+  if (!safeCompanies || !safeCompanies.length) {
     return null
   }
 
@@ -33,10 +33,10 @@ const InventoryCompanyTable = ({ companies = [] }) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {companies.map((company, index) => (
+              {safeCompanies.map((company, index) => (
                 <TableRow key={`${company.company_id}-${index}`}>
                   <TableCell>{company.company_name || `Company #${company.company_id}`}</TableCell>
-                  <TableCell align="right">{formatCurrency(company.amount)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(company.amount)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

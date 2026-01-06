@@ -1,11 +1,16 @@
 import { ArrowDropDown, ArrowDropUp } from '@mui/icons-material'
 import { Card, CardContent, Typography, Box, Chip, Stack } from '@mui/material'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatValue = (value, unit, prefix = '', suffix = '') => {
   if (value === null || value === undefined) return '—'
   const resolvedPrefix = prefix || (unit && !unit.endsWith('%') ? `${unit} ` : '')
   const resolvedSuffix = suffix || (unit && unit.endsWith('%') ? unit : '')
   if (typeof value === 'number') {
+    if (unit && !unit.endsWith('%')) {
+      // treat as currency/amount when unit is present and not a percent
+      return `${formatCurrencyCrore(value, unit)}`
+    }
     return `${resolvedPrefix}${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}${resolvedSuffix}`
   }
   return value

@@ -11,9 +11,7 @@ import {
   LinearProgress,
   Box,
 } from '@mui/material'
-
-const formatCurrency = (value) =>
-  typeof value === 'number' ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const DepartmentPerformanceTable = ({ departments = [] }) => {
   if (!departments.length) {
@@ -41,9 +39,9 @@ const DepartmentPerformanceTable = ({ departments = [] }) => {
               {departments.map((dept, index) => (
                 <TableRow key={`${dept.department_id}-${index}`}>
                   <TableCell>{dept.department_name || 'N/A'}</TableCell>
-                  <TableCell align="right">{formatCurrency(dept.budget)}</TableCell>
-                  <TableCell align="right">{formatCurrency(dept.actual)}</TableCell>
-                  <TableCell align="right">{formatCurrency(dept.variance)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(dept.budget)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(dept.actual)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(dept.variance)}</TableCell>
                   <TableCell align="right">
                     <Box display="flex" alignItems="center" gap={1}>
                       <Box width="100%">

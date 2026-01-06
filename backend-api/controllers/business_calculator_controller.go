@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"idash-backend-api/database"
+	"idash-backend-api/models"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,11 +24,11 @@ func GetBusinessCalculation(c echo.Context) error {
 	endDate := startDate.AddDate(0, 1, 0).Add(-24 * time.Hour)
 
 	type BusinessCalculation struct {
-		NetSales        float64 `json:"net_sales"`
-		BankLoan        float64 `json:"bank_loan"`
+		NetSales         float64 `json:"net_sales"`
+		BankLoan         float64 `json:"bank_loan"`
 		FinancialExpense float64 `json:"financial_expense"`
-		LoanRatio       float64 `json:"loan_ratio"`
-		ExpenseRatio    float64 `json:"expense_ratio"`
+		LoanRatio        float64 `json:"loan_ratio"`
+		ExpenseRatio     float64 `json:"expense_ratio"`
 	}
 
 	var calc BusinessCalculation
@@ -73,7 +74,6 @@ func GetBusinessCalculation(c echo.Context) error {
 
 func GetPrimaryBusinessCalculation(c echo.Context) error {
 	yearMonth := c.QueryParam("yearMonth")
-	companyCode := c.QueryParam("company_code")
 
 	if yearMonth == "" {
 		yearMonth = time.Now().Format("2006-01")
@@ -85,10 +85,10 @@ func GetPrimaryBusinessCalculation(c echo.Context) error {
 	endDate := startDate.AddDate(0, 1, 0).Add(-24 * time.Hour)
 
 	type PrimaryBusinessCalc struct {
-		Lifting          float64 `json:"lifting"`
+		Lifting           float64 `json:"lifting"`
 		PrimaryCollection float64 `json:"primary_collection"`
-		CollectionRate   float64 `json:"collection_rate"`
-		DueAmount        float64 `json:"due_amount"`
+		CollectionRate    float64 `json:"collection_rate"`
+		DueAmount         float64 `json:"due_amount"`
 	}
 
 	var calc PrimaryBusinessCalc
@@ -114,7 +114,6 @@ func GetPrimaryBusinessCalculation(c echo.Context) error {
 
 func GetSecondaryBusinessCalculation(c echo.Context) error {
 	yearMonth := c.QueryParam("yearMonth")
-	companyCode := c.QueryParam("company_code")
 
 	if yearMonth == "" {
 		yearMonth = time.Now().Format("2006-01")
@@ -167,12 +166,12 @@ func GetPrimaryIntelligenceDetails(c echo.Context) error {
 	endDate := startDate.AddDate(0, 1, 0).Add(-24 * time.Hour)
 
 	type IntelligenceDetails struct {
-		ChannelID        int     `json:"channel_id"`
-		ChannelName      string  `json:"channel_name"`
-		Lifting          float64 `json:"lifting"`
+		ChannelID         int     `json:"channel_id"`
+		ChannelName       string  `json:"channel_name"`
+		Lifting           float64 `json:"lifting"`
 		PrimaryCollection float64 `json:"primary_collection"`
-		CollectionRate   float64 `json:"collection_rate"`
-		DueAmount        float64 `json:"due_amount"`
+		CollectionRate    float64 `json:"collection_rate"`
+		DueAmount         float64 `json:"due_amount"`
 	}
 
 	var details []IntelligenceDetails
@@ -279,4 +278,3 @@ func GetTopRetailerList(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, retailers)
 }
-

@@ -8,6 +8,9 @@ import (
 )
 
 func SetupRoutes(e *echo.Echo) {
+	// Public health route
+	e.GET("/health", controllers.HealthCheck)
+
 	// Public routes
 	e.POST("/api/auth/login", controllers.Login)
 	e.POST("/api/auth/register", controllers.Register)

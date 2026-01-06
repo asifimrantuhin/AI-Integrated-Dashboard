@@ -1,11 +1,12 @@
 import { Card, CardContent, Typography, Grid, Chip } from '@mui/material'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatCurrencyIfNeeded = (label, value) => {
   if (typeof value !== 'number') return value
   if (label.toLowerCase().includes('attrition')) {
     return value.toFixed(1)
   }
-  return `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+  return formatCurrencyCrore(value)
 }
 
 const BIForecastGrid = ({ forecasts = [] }) => {

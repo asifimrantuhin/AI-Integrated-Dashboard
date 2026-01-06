@@ -53,9 +53,10 @@ export const useDashboardData = (endpoint) => {
   const [stale, setStale] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const abortRef = useRef(null)
+  const initialLoadRef = useRef(true)
 
   const fetchData = useCallback(
-    async ({ force = false } = {}) => {
+    async ({ force = false, silent = false } = {}) => {
       if (!force && abortRef.current) return
 
       if (abortRef.current) {
@@ -67,7 +68,7 @@ export const useDashboardData = (endpoint) => {
 
       try {
         if (force) {
-          setRefreshing(true)
+          if (!silent) setRefreshing(true)
         } else {
           setLoading(true)
         }
@@ -94,17 +95,35 @@ export const useDashboardData = (endpoint) => {
 
   useEffect(() => {
     const cached = readCache(cacheKey)
-    if (cached?.payload) {
-      setData(cached.payload)
-      setLoading(false)
-      const age = Date.now() - cached.timestamp
-      // Consider cache stale if older than half the TTL
-      if (age > CACHE_TTL / 2) {
-        setStale(true)
-        fetchData({ force: true })
+
+    if (initialLoadRef.current) {
+      // On initial mount show cached data immediately (if available),
+      // then run a visible forced refresh so the UI shows the "Refreshing" state
+      // while updating to the latest data.
+      if (cached?.payload) {
+        setData(cached.payload)
+        setLoading(false)
+        const age = Date.now() - cached.timestamp
+        if (age > CACHE_TTL / 2) {
+          setStale(true)
+        }
       }
+
+      fetchData({ force: true, silent: false })
+      initialLoadRef.current = false
     } else {
-      fetchData()
+      if (cached?.payload) {
+        setData(cached.payload)
+        setLoading(false)
+        const age = Date.now() - cached.timestamp
+        // Consider cache stale if older than half the TTL
+        if (age > CACHE_TTL / 2) {
+          setStale(true)
+          fetchData({ force: true })
+        }
+      } else {
+        fetchData()
+      }
     }
 
     return () => {
@@ -121,6 +140,9 @@ export const useDashboardData = (endpoint) => {
     stale,
     refreshing,
     refresh: () => fetchData({ force: true }),
+    // non-UI load: fetch fresh data but avoid showing the "Refreshing" UI state.
+    // This loads the same data a forced refresh would, but silently.
+    load: () => fetchData({ force: true, silent: true }),
   }
 }
 

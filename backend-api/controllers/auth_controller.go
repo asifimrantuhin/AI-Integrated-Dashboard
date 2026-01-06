@@ -16,9 +16,9 @@ import (
 )
 
 type LoginRequest struct {
-	Email       string `json:"email" validate:"required,email"`
-	Password    string `json:"password" validate:"required"`
-	CompanyID   *uint  `json:"company_id"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required"`
+	CompanyID *uint  `json:"company_id"`
 }
 
 type RegisterRequest struct {
@@ -33,12 +33,12 @@ type RegisterRequest struct {
 }
 
 type AuthResponse struct {
-	Token            string        `json:"token"`
-	User             models.User   `json:"user"`
-	Roles            []string      `json:"roles"`
-	Permissions      []string      `json:"permissions"`
-	DefaultCompanyID *uint         `json:"default_company_id"`
-	CompanyIDs       []uint        `json:"company_ids"`
+	Token            string      `json:"token"`
+	User             models.User `json:"user"`
+	Roles            []string    `json:"roles"`
+	Permissions      []string    `json:"permissions"`
+	DefaultCompanyID *uint       `json:"default_company_id"`
+	CompanyIDs       []uint      `json:"company_ids"`
 }
 
 func Login(c echo.Context) error {
@@ -52,7 +52,9 @@ func Login(c echo.Context) error {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid credentials"})
 		}
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to load user"})
+		// Log the underlying DB error for diagnostics and return a clearer message
+		c.Logger().Errorf("preloadUserByEmail error: %v", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to load user: " + err.Error()})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
@@ -156,7 +158,9 @@ func GetUser(c echo.Context) error {
 }
 
 func preloadUserByEmail(user *models.User, email string) error {
-	return database.DB.
+	// Use Unscoped() to avoid GORM adding soft-delete filters (deleted_at IS NULL)
+	// because some legacy schemas may not include deleted_at columns on join tables.
+	return database.DB.Unscoped().
 		Preload("Roles.Permissions").
 		Preload("Companies").
 		Preload("DefaultCompany").
@@ -165,7 +169,8 @@ func preloadUserByEmail(user *models.User, email string) error {
 }
 
 func preloadUserByID(user *models.User, id uint) error {
-	return database.DB.
+	// See note in preloadUserByEmail about Unscoped usage
+	return database.DB.Unscoped().
 		Preload("Roles.Permissions").
 		Preload("Companies").
 		Preload("DefaultCompany").
@@ -298,4 +303,3 @@ func createUserAccount(req RegisterRequest) (models.User, []string, []string, []
 
 	return user, rolesList, permissions, companyIDs, nil
 }
-

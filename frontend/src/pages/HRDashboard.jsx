@@ -18,11 +18,20 @@ import WorkforceMovementCard from '../components/HR/WorkforceMovementCard'
 import HRAlertsCard from '../components/HR/HRAlertsCard'
 import HRAttritionForecastChart from '../components/AI/HRAttritionForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const HRDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/hr/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/hr/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

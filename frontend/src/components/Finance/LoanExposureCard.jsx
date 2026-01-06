@@ -1,7 +1,5 @@
 import { Card, CardContent, Typography, List, ListItem, ListItemText, Divider } from '@mui/material'
-
-const formatCurrency = (value) =>
-  typeof value === 'number' ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const LoanExposureCard = ({ loans = [] }) => {
   if (!loans.length) {
@@ -18,7 +16,7 @@ const LoanExposureCard = ({ loans = [] }) => {
           {loans.map((loan, index) => (
             <>
               <ListItem key={`${loan.head}-${index}`}>
-                <ListItemText primary={loan.head || 'Loan Head'} secondary={formatCurrency(loan.amount)} />
+                <ListItemText primary={loan.head || 'Loan Head'} secondary={formatCurrencyCrore(loan.amount)} />
               </ListItem>
               {index < loans.length - 1 && <Divider component="li" />}
             </>

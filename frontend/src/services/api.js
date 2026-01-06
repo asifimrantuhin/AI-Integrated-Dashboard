@@ -1,7 +1,15 @@
 import axios from 'axios'
 
+// Default to relative '/api' so Vite dev server proxy (configured in vite.config.js)
+// forwards requests to the backend at http://localhost:8080. If you need to
+// target the backend directly (e.g. when serving built files), set
+// `VITE_API_BASE` in environment.
+const defaultBase = typeof import.meta !== 'undefined' && import.meta.env
+  ? (import.meta.env.VITE_API_BASE || '/api')
+  : '/api'
+
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: defaultBase,
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',

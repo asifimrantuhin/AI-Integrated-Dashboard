@@ -1,4 +1,5 @@
-import { Fragment, isValidElement, useMemo } from 'react'
+import { Fragment, isValidElement, useMemo, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import {
   Alert,
   Box,
@@ -30,7 +31,17 @@ const SkeletonGrid = () => (
 )
 
 const DashboardView = ({ title, endpoint, description }) => {
-  const { data, loading, error, stale, refreshing, refresh } = useDashboardData(endpoint)
+  const { data, loading, error, stale, refreshing, refresh, load } = useDashboardData(endpoint)
+
+  const location = useLocation()
+
+  // Trigger a non-forced load when the route changes. `load()` will request
+  // fresh data unless a fetch is already in-flight; the manual `refresh()`
+  // button still forces an immediate update when the user requests it.
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   const lastUpdatedLabel = useMemo(() => {
     if (!data?.last_updated) return null

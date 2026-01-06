@@ -21,10 +21,19 @@ import InventoryForecastChart from '../components/AI/InventoryForecastChart'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import ScenarioImpactCard from '../components/Dashboard/ScenarioImpactCard'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const InventoryDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/inventory/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/inventory/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

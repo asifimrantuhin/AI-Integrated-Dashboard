@@ -22,9 +22,18 @@ import RecommendationList from '../components/Dashboard/RecommendationList'
 import ScenarioImpactCard from '../components/Dashboard/ScenarioImpactCard'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 
 const FinanceDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/finance/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/finance/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

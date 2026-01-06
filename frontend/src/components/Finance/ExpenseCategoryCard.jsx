@@ -1,10 +1,11 @@
+import React from 'react'
 import { Card, CardContent, Typography, List, ListItem, ListItemText, Divider } from '@mui/material'
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
-const formatCurrency = (value) =>
-  typeof value === 'number' ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : value
-
-const ExpenseCategoryCard = ({ categories = [] }) => {
-  if (!categories.length) {
+const ExpenseCategoryCard = ({ categories } = {}) => {
+  // Ensure `categories` is always an array to avoid null/undefined access
+  const safeCategories = Array.isArray(categories) ? categories : (categories ? [categories] : [])
+  if (!safeCategories || !safeCategories.length) {
     return null
   }
 
@@ -15,16 +16,16 @@ const ExpenseCategoryCard = ({ categories = [] }) => {
           Top Expense Categories
         </Typography>
         <List dense>
-          {categories.map((category, index) => (
-            <>
-              <ListItem key={`${category.category_id}-${index}`}>
+          {safeCategories.map((category, index) => (
+            <React.Fragment key={`${category?.category_id || index}-${index}`}>
+              <ListItem>
                 <ListItemText
-                  primary={category.category_name || 'Unassigned'}
-                  secondary={formatCurrency(category.actual)}
+                  primary={category?.category_name || 'Unassigned'}
+                  secondary={formatCurrencyCrore(category?.actual)}
                 />
               </ListItem>
-              {index < categories.length - 1 && <Divider component="li" />}
-            </>
+              {index < safeCategories.length - 1 && <Divider component="li" />}
+            </React.Fragment>
           ))}
         </List>
       </CardContent>

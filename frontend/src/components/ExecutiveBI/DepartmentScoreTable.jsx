@@ -9,9 +9,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
-
-const formatCurrency = (value) =>
-  typeof value === 'number' ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const DepartmentScoreTable = ({ departments = [] }) => {
   if (!departments.length) {
@@ -39,9 +37,9 @@ const DepartmentScoreTable = ({ departments = [] }) => {
               {departments.map((dept, index) => (
                 <TableRow key={`${dept.department}-${index}`}>
                   <TableCell>{dept.department || 'N/A'}</TableCell>
-                  <TableCell align="right">{formatCurrency(dept.revenue)}</TableCell>
-                  <TableCell align="right">{formatCurrency(dept.cost)}</TableCell>
-                  <TableCell align="right">{formatCurrency(dept.margin)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(dept.revenue)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(dept.cost)}</TableCell>
+                  <TableCell align="right">{formatCurrencyCrore(dept.margin)}</TableCell>
                   <TableCell align="right">{dept.attendance?.toFixed(1) ?? '0.0'}%</TableCell>
                 </TableRow>
               ))}

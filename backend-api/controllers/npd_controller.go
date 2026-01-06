@@ -70,10 +70,10 @@ func GetProjectSubDeliverables(c echo.Context) error {
 
 func GetProjectStatus(c echo.Context) error {
 	type ProjectStatus struct {
-		TotalProjects     int `json:"total_projects"`
-		ActiveProjects    int `json:"active_projects"`
-		CompletedProjects int `json:"completed_projects"`
-		PendingProjects   int `json:"pending_projects"`
+		TotalProjects     int64 `json:"total_projects"`
+		ActiveProjects    int64 `json:"active_projects"`
+		CompletedProjects int64 `json:"completed_projects"`
+		PendingProjects   int64 `json:"pending_projects"`
 	}
 
 	var status ProjectStatus
@@ -85,4 +85,3 @@ func GetProjectStatus(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, status)
 }
-

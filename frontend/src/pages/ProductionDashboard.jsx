@@ -19,11 +19,20 @@ import MaintenanceIssuesCard from '../components/Production/MaintenanceIssuesCar
 import ProductionAlertsCard from '../components/Production/ProductionAlertsCard'
 import ProductionForecastChart from '../components/AI/ProductionForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const ProductionDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/production/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/production/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

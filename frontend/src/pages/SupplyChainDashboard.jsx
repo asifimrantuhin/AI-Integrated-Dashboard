@@ -18,11 +18,20 @@ import PendingOrdersCard from '../components/SupplyChain/PendingOrdersCard'
 import SupplyAlertsCard from '../components/SupplyChain/SupplyAlertsCard'
 import SupplyForecastChart from '../components/AI/SupplyForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const SupplyChainDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/supplychain/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/supplychain/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

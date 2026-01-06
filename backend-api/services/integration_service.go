@@ -35,15 +35,15 @@ func Integration() *integrationService {
 }
 
 // IntegrationStatus describes the state of the integration pipeline
- type IntegrationStatus struct {
-	Status        string    `json:"status"`
-	StartedBy     interface{} `json:"started_by"`
-	StartedAt     *time.Time `json:"started_at"`
-	CompletedAt   *time.Time `json:"completed_at"`
-	Duration      string    `json:"duration"`
-	Message       string    `json:"message"`
-	Errors        []string  `json:"errors"`
-	LastUpdated   time.Time `json:"last_updated"`
+type IntegrationStatus struct {
+	Status      string      `json:"status"`
+	StartedBy   interface{} `json:"started_by"`
+	StartedAt   *time.Time  `json:"started_at"`
+	CompletedAt *time.Time  `json:"completed_at"`
+	Duration    string      `json:"duration"`
+	Message     string      `json:"message"`
+	Errors      []string    `json:"errors"`
+	LastUpdated time.Time   `json:"last_updated"`
 }
 
 // Status returns a copy of the latest status snapshot
@@ -83,7 +83,7 @@ func (s *integrationService) RunFullSync(startedBy interface{}) {
 	errs := make([]string, 0)
 
 	syncSteps := []struct {
-		label string
+		label  string
 		action func(context.Context) error
 	}{
 		{"Refresh materialized views", refreshMaterializedViews},
@@ -118,7 +118,13 @@ func (s *integrationService) RunFullSync(startedBy interface{}) {
 
 func refreshMaterializedViews(ctx context.Context) error {
 	err := database.DB.WithContext(ctx).Exec("CALL refresh_materialized_views()").Error
-	if err != nil && !strings.Contains(err.Error(), "doesn't exist") {
+	if err != nil {
+		// tolerate different MySQL messages when the stored procedure is absent
+		le := strings.ToLower(err.Error())
+		if strings.Contains(le, "doesn't exist") || strings.Contains(le, "does not exist") || strings.Contains(le, "procedure") || strings.Contains(le, "error 1305") {
+			// missing procedure is non-fatal for environments without materialized view support
+			return nil
+		}
 		return err
 	}
 	return nil
@@ -139,9 +145,26 @@ func triggerForecast(ctx context.Context, forecastType string) error {
 	if url == "" {
 		url = "http://localhost:8000"
 	}
+	// Map forecast types to ai-service endpoints
+	supported := map[string]string{
+		"sales":      "/api/forecast/sales",
+		"production": "/api/forecast/production",
+		"finance":    "/api/forecast/finance",
+		"inventory":  "/api/forecast/inventory",
+	}
 
-	reqBody, _ := json.Marshal(map[string]string{"forecast_type": forecastType})
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url+"/pipelines/forecast", bytes.NewBuffer(reqBody))
+	path, ok := supported[forecastType]
+	if !ok {
+		// If the AI service doesn't support this forecast type, skip with a logged warning
+		log.Printf("[integration] skipping unsupported forecast type: %s", forecastType)
+		return nil
+	}
+
+	// Provide minimal payload; ai-service may require start/end dates, so include defaults
+	start := time.Now().AddDate(0, 0, -30).Format("2006-01-02")
+	end := time.Now().Format("2006-01-02")
+	reqBody, _ := json.Marshal(map[string]interface{}{"forecast_type": forecastType, "start_date": start, "end_date": end, "days": 30})
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url+path, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return err
 	}

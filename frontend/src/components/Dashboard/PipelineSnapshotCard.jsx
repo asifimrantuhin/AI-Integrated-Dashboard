@@ -3,11 +3,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping'
 import PendingActionsIcon from '@mui/icons-material/PendingActions'
 import PercentIcon from '@mui/icons-material/Percent'
 import { Box, Card, CardContent, Chip, Divider, Grid, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material'
-
-const formatCurrency = (value) =>
-  typeof value === 'number'
-    ? `৳ ${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-    : value
+import { formatCurrencyCrore } from '../../utils/formatNumber'
 
 const formatPercent = (value) =>
   typeof value === 'number' ? `${value.toFixed(1)}%` : value
@@ -51,9 +47,9 @@ const PipelineSnapshotCard = ({ pipeline, title = 'Pipeline Overview', dense = f
               <Typography variant="overline" color="text.secondary">
                 Order Book
               </Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
+                <Stack direction="row" spacing={1} alignItems="center">
                 <AssessmentIcon fontSize="small" color="primary" />
-                <Typography variant="subtitle1">{formatCurrency(pipeline.total_value || 0)}</Typography>
+                <Typography variant="subtitle1">{formatCurrencyCrore(pipeline.total_value || 0)}</Typography>
               </Stack>
             </Stack>
           </Grid>
@@ -64,7 +60,7 @@ const PipelineSnapshotCard = ({ pipeline, title = 'Pipeline Overview', dense = f
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <LocalShippingIcon fontSize="small" color="success" />
-                <Typography variant="subtitle1">{formatCurrency(pipeline.delivered_value || 0)}</Typography>
+                <Typography variant="subtitle1">{formatCurrencyCrore(pipeline.delivered_value || 0)}</Typography>
               </Stack>
             </Stack>
           </Grid>
@@ -75,7 +71,7 @@ const PipelineSnapshotCard = ({ pipeline, title = 'Pipeline Overview', dense = f
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
                 <PendingActionsIcon fontSize="small" color="warning" />
-                <Typography variant="subtitle1">{formatCurrency(pipeline.pending_value || 0)}</Typography>
+                <Typography variant="subtitle1">{formatCurrencyCrore(pipeline.pending_value || 0)}</Typography>
               </Stack>
             </Stack>
           </Grid>
@@ -108,11 +104,11 @@ const PipelineSnapshotCard = ({ pipeline, title = 'Pipeline Overview', dense = f
                   secondary={
                     <Stack spacing={0.75} mt={0.75}>
                       <Stack direction="row" spacing={2} flexWrap="wrap">
-                        <Typography variant="caption" color="text.secondary">
-                          Value: {formatCurrency(stage.value || 0)}
+                          <Typography variant="caption" color="text.secondary">
+                          Value: {formatCurrencyCrore(stage.value || 0)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          Pending: {formatCurrency(stage.pending_value || 0)}
+                          Pending: {formatCurrencyCrore(stage.pending_value || 0)}
                         </Typography>
                         <Typography variant="caption" color="text.secondary">
                           Discount: {formatPercent(stage.avg_discount || 0)}

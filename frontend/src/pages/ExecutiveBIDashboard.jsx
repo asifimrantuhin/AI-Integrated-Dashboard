@@ -18,13 +18,22 @@ import BIAlertsCard from '../components/ExecutiveBI/BIAlertsCard'
 import BIAssistant from '../components/ExecutiveBI/BIAssistant'
 import SupplyTrendChart from '../components/SupplyChain/SupplyTrendChart'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import PipelineSnapshotCard from '../components/Dashboard/PipelineSnapshotCard'
 import TargetVarianceCard from '../components/Dashboard/TargetVarianceCard'
 import PromotionImpactCard from '../components/Dashboard/PromotionImpactCard'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const ExecutiveBIDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/bi/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/bi/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

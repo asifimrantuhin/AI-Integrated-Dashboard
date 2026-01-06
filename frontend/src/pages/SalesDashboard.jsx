@@ -18,6 +18,8 @@ import ProductPerformanceCard from '../components/Sales/ProductPerformanceCard'
 import SalesAlertsCard from '../components/Sales/SalesAlertsCard'
 import SalesForecastChart from '../components/AI/SalesForecastChart'
 import useDashboardData from '../hooks/useDashboardData'
+import { useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import RecommendationList from '../components/Dashboard/RecommendationList'
 import ScenarioImpactCard from '../components/Dashboard/ScenarioImpactCard'
 import AnomalyAlertList from '../components/Dashboard/AnomalyAlertList'
@@ -27,7 +29,14 @@ import PromotionImpactCard from '../components/Dashboard/PromotionImpactCard'
 import InsightListCard from '../components/Dashboard/InsightListCard'
 
 const SalesDashboard = () => {
-  const { data, loading, error, refresh, refreshing, stale } = useDashboardData('/sales/overview')
+  const { data, loading, error, refresh, refreshing, stale, load } = useDashboardData('/sales/overview')
+
+  const location = useLocation()
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname])
 
   if (loading) {
     return (

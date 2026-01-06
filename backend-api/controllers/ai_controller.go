@@ -3,11 +3,12 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"idash-backend-api/database"
@@ -33,13 +34,16 @@ func postToAIService(endpoint string, payload interface{}, target interface{}) e
 	}
 	defer resp.Body.Close()
 
+	respBody, _ := io.ReadAll(resp.Body)
+
 	if resp.StatusCode >= 400 {
-		return errors.New("ai service returned status " + resp.Status)
+		// include response body for better diagnostics
+		return fmt.Errorf("ai service returned status %s: %s", resp.Status, strings.TrimSpace(string(respBody)))
 	}
 
 	if target != nil {
-		if err := json.NewDecoder(resp.Body).Decode(target); err != nil {
-			return err
+		if err := json.Unmarshal(respBody, target); err != nil {
+			return fmt.Errorf("failed to decode ai response: %w; body=%s", err, strings.TrimSpace(string(respBody)))
 		}
 	}
 
@@ -55,59 +59,59 @@ func mustJSON(val interface{}) []byte {
 }
 
 type ForecastRequest struct {
-	ForecastType  string `json:"forecast_type"` // sales, production, finance, inventory
-	Period        string `json:"period"`        // daily, weekly, monthly
-	StartDate     string `json:"start_date"`
-	EndDate       string `json:"end_date"`
-	Days          int    `json:"days"`          // Forecast horizon
-	CompanyID     *int   `json:"company_id"`
-	FactoryID     *int   `json:"factory_id"`
-	ChannelID     *int   `json:"channel_id"`
-	ProductID     *int   `json:"product_id"`
+	ForecastType   string  `json:"forecast_type"` // sales, production, finance, inventory
+	Period         string  `json:"period"`        // daily, weekly, monthly
+	StartDate      string  `json:"start_date"`
+	EndDate        string  `json:"end_date"`
+	Days           int     `json:"days"` // Forecast horizon
+	CompanyID      *int    `json:"company_id"`
+	FactoryID      *int    `json:"factory_id"`
+	ChannelID      *int    `json:"channel_id"`
+	ProductID      *int    `json:"product_id"`
 	BudgetCategory *string `json:"budget_category"`
 }
 
 type ForecastResponse struct {
-	ForecastType        string                   `json:"forecast_type"`
-	ForecastID          string                   `json:"forecast_id"`
-	EntityID            interface{}              `json:"entity_id"`
-	ForecastPeriodDays  int                      `json:"forecast_period_days"`
-	ConfidenceLevel     float64                  `json:"confidence_level"`
-	TotalForecast       float64                  `json:"total_forecast"`
-	AverageDailyForecast float64                 `json:"average_daily_forecast"`
-	ProjectedGrowthRate float64                  `json:"projected_growth_rate,omitempty"`
-	ForecastData        []map[string]interface{} `json:"forecast_data"`
-	ModelUsed           string                   `json:"model_used"`
-	CreatedAt           string                   `json:"created_at"`
+	ForecastType         string                   `json:"forecast_type"`
+	ForecastID           string                   `json:"forecast_id"`
+	EntityID             interface{}              `json:"entity_id"`
+	ForecastPeriodDays   int                      `json:"forecast_period_days"`
+	ConfidenceLevel      float64                  `json:"confidence_level"`
+	TotalForecast        float64                  `json:"total_forecast"`
+	AverageDailyForecast float64                  `json:"average_daily_forecast"`
+	ProjectedGrowthRate  float64                  `json:"projected_growth_rate,omitempty"`
+	ForecastData         []map[string]interface{} `json:"forecast_data"`
+	ModelUsed            string                   `json:"model_used"`
+	CreatedAt            string                   `json:"created_at"`
 }
 
 type SalesPredictionResponse struct {
-	Granularity     string                     `json:"granularity"`
-	Horizon         int                        `json:"horizon"`
-	Predictions     []map[string]interface{}   `json:"predictions"`
-	Recommendations []map[string]interface{}   `json:"recommendations"`
-	GeneratedAt     string                     `json:"generated_at"`
+	Granularity     string                   `json:"granularity"`
+	Horizon         int                      `json:"horizon"`
+	Predictions     []map[string]interface{} `json:"predictions"`
+	Recommendations []map[string]interface{} `json:"recommendations"`
+	GeneratedAt     string                   `json:"generated_at"`
 }
 
 type InventoryPrescriptionResponse struct {
-	Forecast      map[string]interface{}    `json:"forecast"`
-	Prescriptions map[string]interface{}    `json:"prescriptions"`
-	GeneratedAt   string                    `json:"generated_at"`
+	Forecast      map[string]interface{} `json:"forecast"`
+	Prescriptions map[string]interface{} `json:"prescriptions"`
+	GeneratedAt   string                 `json:"generated_at"`
 }
 
 type FinancialPrescriptionResponse struct {
-	Forecast      map[string]interface{}  `json:"forecast"`
-	Prescriptions map[string]interface{}  `json:"prescriptions"`
-	GeneratedAt   string                  `json:"generated_at"`
+	Forecast      map[string]interface{} `json:"forecast"`
+	Prescriptions map[string]interface{} `json:"prescriptions"`
+	GeneratedAt   string                 `json:"generated_at"`
 }
 
 type ScenarioSimulationResponse struct {
-	Horizon            int                    `json:"horizon"`
-	Inputs             map[string]float64     `json:"inputs"`
-	ProjectedSales     float64                `json:"projected_sales"`
-	ProjectedMargin    float64                `json:"projected_margin"`
-	IncrementalProfit  float64                `json:"incremental_profit"`
-	Narrative          string                 `json:"narrative"`
+	Horizon           int                `json:"horizon"`
+	Inputs            map[string]float64 `json:"inputs"`
+	ProjectedSales    float64            `json:"projected_sales"`
+	ProjectedMargin   float64            `json:"projected_margin"`
+	IncrementalProfit float64            `json:"incremental_profit"`
+	Narrative         string             `json:"narrative"`
 }
 
 // RequestSalesForecast generates sales forecast
@@ -118,11 +122,24 @@ func RequestSalesForecast(c echo.Context) error {
 	}
 
 	req.ForecastType = "sales"
+	if req.Days == 0 {
+		req.Days = 30
+	}
+	if req.StartDate == "" || req.EndDate == "" {
+		end := time.Now()
+		start := end.AddDate(0, 0, -30)
+		if req.StartDate == "" {
+			req.StartDate = start.Format("2006-01-02")
+		}
+		if req.EndDate == "" {
+			req.EndDate = end.Format("2006-01-02")
+		}
+	}
 
 	// Get historical data from database
 	var salesData []models.ChannelwiseLICdataMonthly
 	query := database.DB.Table("channelwise_monthly_report")
-	
+
 	if req.StartDate != "" {
 		startDate, _ := time.Parse("2006-01-02", req.StartDate)
 		query = query.Where("data_month >= ?", startDate)
@@ -134,11 +151,8 @@ func RequestSalesForecast(c echo.Context) error {
 	if req.ChannelID != nil {
 		query = query.Where("channel_id = ?", *req.ChannelID)
 	}
-	
-	query.Find(&salesData)
 
-	// Convert to JSON for AI service
-	dataJSON, _ := json.Marshal(salesData)
+	query.Find(&salesData)
 
 	// Call AI Service
 	aiServiceURL := os.Getenv("AI_SERVICE_URL")
@@ -146,33 +160,26 @@ func RequestSalesForecast(c echo.Context) error {
 		aiServiceURL = "http://localhost:8000"
 	}
 
-	reqBody, _ := json.Marshal(req)
-	resp, err := http.Post(aiServiceURL+"/api/forecast/sales", "application/json", bytes.NewBuffer(reqBody))
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to connect to AI service: " + err.Error()})
-	}
-	defer resp.Body.Close()
-
 	var forecastResp ForecastResponse
-	if err := json.NewDecoder(resp.Body).Decode(&forecastResp); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse AI service response: " + err.Error()})
+	if err := postToAIService("/api/forecast/sales", req, &forecastResp); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "AI service error: " + err.Error()})
 	}
 
 	// Store forecast in database
 	forecast := models.AIForecast{
-		ForecastType:   "sales",
-		EntityType:     "channel",
-		EntityID:       strconv.Itoa(*req.ChannelID),
-		ForecastDate:   time.Now(),
+		ForecastType:    "sales",
+		EntityType:      "channel",
+		EntityID:        strconv.Itoa(*req.ChannelID),
+		ForecastDate:    time.Now(),
 		ForecastedValue: forecastResp.TotalForecast,
 		ConfidenceLevel: forecastResp.ConfidenceLevel,
-		ModelUsed:      forecastResp.ModelUsed,
-		Status:         "active",
+		ModelUsed:       forecastResp.ModelUsed,
+		Status:          "active",
 	}
-	
+
 	detailsJSON, _ := json.Marshal(forecastResp.ForecastData)
 	forecast.ForecastDetails = string(detailsJSON)
-	
+
 	database.DB.Create(&forecast)
 	forecastResp.ForecastID = strconv.Itoa(int(forecast.ID))
 
@@ -187,41 +194,47 @@ func RequestProductionForecast(c echo.Context) error {
 	}
 
 	req.ForecastType = "production"
+	if req.Days == 0 {
+		req.Days = 30
+	}
+	if req.StartDate == "" || req.EndDate == "" {
+		end := time.Now()
+		start := end.AddDate(0, 0, -30)
+		if req.StartDate == "" {
+			req.StartDate = start.Format("2006-01-02")
+		}
+		if req.EndDate == "" {
+			req.EndDate = end.Format("2006-01-02")
+		}
+	}
 
 	aiServiceURL := os.Getenv("AI_SERVICE_URL")
 	if aiServiceURL == "" {
 		aiServiceURL = "http://localhost:8000"
 	}
 
-	reqBody, _ := json.Marshal(req)
-	resp, err := http.Post(aiServiceURL+"/api/forecast/production", "application/json", bytes.NewBuffer(reqBody))
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to connect to AI service"})
-	}
-	defer resp.Body.Close()
-
 	var forecastResp ForecastResponse
-	if err := json.NewDecoder(resp.Body).Decode(&forecastResp); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse AI service response"})
+	if err := postToAIService("/api/forecast/production", req, &forecastResp); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "AI service error: " + err.Error()})
 	}
 
 	// Store forecast
 	forecast := models.AIForecast{
-		ForecastType:   "production",
-		EntityType:     "factory",
-		ForecastDate:   time.Now(),
+		ForecastType:    "production",
+		EntityType:      "factory",
+		ForecastDate:    time.Now(),
 		ForecastedValue: forecastResp.TotalForecast,
 		ConfidenceLevel: forecastResp.ConfidenceLevel,
-		ModelUsed:      forecastResp.ModelUsed,
-		Status:         "active",
+		ModelUsed:       forecastResp.ModelUsed,
+		Status:          "active",
 	}
 	if req.FactoryID != nil {
 		forecast.EntityID = strconv.Itoa(*req.FactoryID)
 	}
-	
+
 	detailsJSON, _ := json.Marshal(forecastResp.ForecastData)
 	forecast.ForecastDetails = string(detailsJSON)
-	
+
 	database.DB.Create(&forecast)
 	forecastResp.ForecastID = strconv.Itoa(int(forecast.ID))
 
@@ -236,41 +249,42 @@ func RequestFinancialForecast(c echo.Context) error {
 	}
 
 	req.ForecastType = "finance"
-
-	aiServiceURL := os.Getenv("AI_SERVICE_URL")
-	if aiServiceURL == "" {
-		aiServiceURL = "http://localhost:8000"
+	if req.Days == 0 {
+		req.Days = 30
 	}
-
-	reqBody, _ := json.Marshal(req)
-	resp, err := http.Post(aiServiceURL+"/api/forecast/finance", "application/json", bytes.NewBuffer(reqBody))
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to connect to AI service"})
+	if req.StartDate == "" || req.EndDate == "" {
+		end := time.Now()
+		start := end.AddDate(0, 0, -30)
+		if req.StartDate == "" {
+			req.StartDate = start.Format("2006-01-02")
+		}
+		if req.EndDate == "" {
+			req.EndDate = end.Format("2006-01-02")
+		}
 	}
-	defer resp.Body.Close()
 
 	var forecastResp ForecastResponse
-	if err := json.NewDecoder(resp.Body).Decode(&forecastResp); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse AI service response"})
+	if err := postToAIService("/api/forecast/finance", req, &forecastResp); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "AI service error: " + err.Error()})
 	}
 
 	// Store forecast
 	forecast := models.AIForecast{
-		ForecastType:   "finance",
-		EntityType:     "budget",
-		ForecastDate:   time.Now(),
+		ForecastType:    "finance",
+		EntityType:      "budget",
+		ForecastDate:    time.Now(),
 		ForecastedValue: forecastResp.TotalForecast,
 		ConfidenceLevel: forecastResp.ConfidenceLevel,
-		ModelUsed:      forecastResp.ModelUsed,
-		Status:         "active",
+		ModelUsed:       forecastResp.ModelUsed,
+		Status:          "active",
 	}
 	if req.BudgetCategory != nil {
 		forecast.EntityID = *req.BudgetCategory
 	}
-	
+
 	detailsJSON, _ := json.Marshal(forecastResp.ForecastData)
 	forecast.ForecastDetails = string(detailsJSON)
-	
+
 	database.DB.Create(&forecast)
 	forecastResp.ForecastID = strconv.Itoa(int(forecast.ID))
 
@@ -285,41 +299,42 @@ func RequestInventoryForecast(c echo.Context) error {
 	}
 
 	req.ForecastType = "inventory"
-
-	aiServiceURL := os.Getenv("AI_SERVICE_URL")
-	if aiServiceURL == "" {
-		aiServiceURL = "http://localhost:8000"
+	if req.Days == 0 {
+		req.Days = 30
 	}
-
-	reqBody, _ := json.Marshal(req)
-	resp, err := http.Post(aiServiceURL+"/api/forecast/inventory", "application/json", bytes.NewBuffer(reqBody))
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to connect to AI service"})
+	if req.StartDate == "" || req.EndDate == "" {
+		end := time.Now()
+		start := end.AddDate(0, 0, -30)
+		if req.StartDate == "" {
+			req.StartDate = start.Format("2006-01-02")
+		}
+		if req.EndDate == "" {
+			req.EndDate = end.Format("2006-01-02")
+		}
 	}
-	defer resp.Body.Close()
 
 	var forecastResp ForecastResponse
-	if err := json.NewDecoder(resp.Body).Decode(&forecastResp); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to parse AI service response"})
+	if err := postToAIService("/api/forecast/inventory", req, &forecastResp); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "AI service error: " + err.Error()})
 	}
 
 	// Store forecast
 	forecast := models.AIForecast{
-		ForecastType:   "inventory",
-		EntityType:     "product",
-		ForecastDate:   time.Now(),
+		ForecastType:    "inventory",
+		EntityType:      "product",
+		ForecastDate:    time.Now(),
 		ForecastedValue: forecastResp.TotalForecast,
 		ConfidenceLevel: forecastResp.ConfidenceLevel,
-		ModelUsed:      forecastResp.ModelUsed,
-		Status:         "active",
+		ModelUsed:       forecastResp.ModelUsed,
+		Status:          "active",
 	}
 	if req.ProductID != nil {
 		forecast.EntityID = strconv.Itoa(*req.ProductID)
 	}
-	
+
 	detailsJSON, _ := json.Marshal(forecastResp.ForecastData)
 	forecast.ForecastDetails = string(detailsJSON)
-	
+
 	database.DB.Create(&forecast)
 	forecastResp.ForecastID = strconv.Itoa(int(forecast.ID))
 
@@ -329,7 +344,7 @@ func RequestInventoryForecast(c echo.Context) error {
 // GetForecast retrieves forecast by ID
 func GetForecast(c echo.Context) error {
 	forecastID := c.Param("id")
-	
+
 	var forecast models.AIForecast
 	if err := database.DB.Where("id = ?", forecastID).First(&forecast).Error; err != nil {
 		return c.JSON(http.StatusNotFound, map[string]string{"error": "Forecast not found"})
@@ -339,13 +354,13 @@ func GetForecast(c echo.Context) error {
 	json.Unmarshal([]byte(forecast.ForecastDetails), &forecastData)
 
 	response := ForecastResponse{
-		ForecastType:       forecast.ForecastType,
-		ForecastID:         forecastID,
-		EntityID:           forecast.EntityID,
-		ConfidenceLevel:    forecast.ConfidenceLevel,
-		ForecastData:       forecastData,
-		ModelUsed:          forecast.ModelUsed,
-		CreatedAt:          forecast.CreatedAt.Format(time.RFC3339),
+		ForecastType:    forecast.ForecastType,
+		ForecastID:      forecastID,
+		EntityID:        forecast.EntityID,
+		ConfidenceLevel: forecast.ConfidenceLevel,
+		ForecastData:    forecastData,
+		ModelUsed:       forecast.ModelUsed,
+		CreatedAt:       forecast.CreatedAt.Format(time.RFC3339),
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -354,7 +369,7 @@ func GetForecast(c echo.Context) error {
 // GetForecastsByType retrieves all forecasts of a specific type
 func GetForecastsByType(c echo.Context) error {
 	forecastType := c.Param("type")
-	
+
 	var forecasts []models.AIForecast
 	database.DB.Where("forecast_type = ? AND status = ?", forecastType, "active").
 		Order("created_at DESC").
@@ -367,9 +382,9 @@ func GetForecastsByType(c echo.Context) error {
 // AnalyzeData performs data analysis
 func AnalyzeData(c echo.Context) error {
 	type AnalysisRequest struct {
-		Metric      string `json:"metric"`
-		StartDate   string `json:"start_date"`
-		EndDate     string `json:"end_date"`
+		Metric       string `json:"metric"`
+		StartDate    string `json:"start_date"`
+		EndDate      string `json:"end_date"`
 		AnalysisType string `json:"analysis_type"`
 	}
 
@@ -409,9 +424,9 @@ func PredictSalesSummary(c echo.Context) error {
 	startDate := endDate.AddDate(0, -18, 0)
 
 	payload := map[string]interface{}{
-		"start_date": startDate.Format("2006-01-02"),
-		"end_date":   endDate.Format("2006-01-02"),
-		"horizon":    30,
+		"start_date":  startDate.Format("2006-01-02"),
+		"end_date":    endDate.Format("2006-01-02"),
+		"horizon":     30,
 		"granularity": granularity,
 	}
 
@@ -460,11 +475,11 @@ func GetInventoryPrescription(c echo.Context) error {
 	startDate := endDate.AddDate(0, -12, 0)
 
 	payload := map[string]interface{}{
-		"module":      "inventory",
-		"start_date":  startDate.Format("2006-01-02"),
-		"end_date":    endDate.Format("2006-01-02"),
-		"horizon":     60,
-		"product_id":  productID,
+		"module":     "inventory",
+		"start_date": startDate.Format("2006-01-02"),
+		"end_date":   endDate.Format("2006-01-02"),
+		"horizon":    60,
+		"product_id": productID,
 	}
 
 	var aiResp InventoryPrescriptionResponse
@@ -559,10 +574,10 @@ func AnalyzeAnomaliesWithActions(c echo.Context) error {
 	startDate := endDate.AddDate(0, -6, 0)
 
 	payload := map[string]interface{}{
-		"metric":       metric,
+		"metric":        metric,
 		"analysis_type": "anomaly",
-		"start_date":   startDate.Format("2006-01-02"),
-		"end_date":     endDate.Format("2006-01-02"),
+		"start_date":    startDate.Format("2006-01-02"),
+		"end_date":      endDate.Format("2006-01-02"),
 	}
 
 	var aiResp map[string]interface{}
@@ -576,9 +591,9 @@ func AnalyzeAnomaliesWithActions(c echo.Context) error {
 // RunScenarioSimulation executes a what-if scenario via AI service
 func RunScenarioSimulation(c echo.Context) error {
 	type ScenarioRequestBody struct {
-		Horizon     int                    `json:"horizon"`
-		BaseMetrics map[string]float64     `json:"base_metrics"`
-		Adjustments map[string]float64     `json:"adjustments"`
+		Horizon     int                `json:"horizon"`
+		BaseMetrics map[string]float64 `json:"base_metrics"`
+		Adjustments map[string]float64 `json:"adjustments"`
 	}
 
 	var body ScenarioRequestBody
